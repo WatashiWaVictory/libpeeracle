@@ -86,6 +86,7 @@
 /third_party/libjpeg_turbo
 /third_party/libsrtp
 /third_party/libvpx
+/third_party/libwebsockets
 /third_party/libxml
 /third_party/libudev
 /third_party/libyuv
