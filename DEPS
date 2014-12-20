@@ -7,6 +7,7 @@ vars = {
   'extra_gyp_flag': '-Dextra_gyp_flag=0',
   'chromium_git': 'https://chromium.googlesource.com',
   'chromium_revision': '8e72e1d6c13fa6a4cf2859ac6e209be4546bb50d',
+  'peeracle_git': 'ssh://git@stash.dotstar.fr:7999',
 }
 
 # NOTE: Prefer revision numbers to tags for svn deps. Use http rather than
@@ -19,6 +20,9 @@ deps = {
 
   'src/third_party/junit':
     Var('chromium_git') + '/external/webrtc/deps/third_party/junit@f35596b476aa6e62fd3b3857b9942ddcd13ce35e', # from svn revision 3367
+
+  'src/third_party/libwebsockets':
+    Var('peeracle_git') + '/prcl/libwebsockets.git',
 }
 
 deps_os = {
