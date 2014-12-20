@@ -22,6 +22,7 @@
         '<(libjingle_root)/talk/libjingle.gyp:*',
         '<(libjingle_root)/talk/libjingle_examples.gyp:*',
         '<@(webrtc_root_additional_dependencies)',
+		'peeracle/peeracle.gyp:*',
       ],
       'conditions': [
         ['OS=="android"', {
