@@ -30,7 +30,7 @@ static int callback_dumb_increment(struct libwebsocket_context *ctx,
     unsigned char *buf = (unsigned char*) malloc(LWS_SEND_BUFFER_PRE_PADDING + len +
 						 LWS_SEND_BUFFER_POST_PADDING);
 
-    int i;
+    size_t i;
 
     // pointer to `void *in` holds the incomming request
     // we're just going to put it in reverse order and put it in `buf` with
