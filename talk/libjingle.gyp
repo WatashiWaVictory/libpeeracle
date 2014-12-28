@@ -283,6 +283,9 @@
             # common.gypi enables this for mac but we want this to be disabled
             # like it is for ios.
             'CLANG_WARN_OBJC_MISSING_PROPERTY_SYNTHESIS': 'NO',
+            'DEPLOYMENT_POSTPROCESSING': 'YES',
+            'STRIP_INSTALLED_PRODUCT': 'YES',
+            'STRIP_STYLE': 'all',
           },
           'conditions': [
             ['OS=="ios"', {
@@ -335,6 +338,15 @@
       'export_dependent_settings': [
         '<(DEPTH)/third_party/expat/expat.gyp:expat',
         '<(DEPTH)/third_party/jsoncpp/jsoncpp.gyp:jsoncpp',
+      ],
+      'conditions': [
+        ['OS=="mac"', {
+          'xcode_settings': {
+            'DEPLOYMENT_POSTPROCESSING': 'YES',
+            'STRIP_INSTALLED_PRODUCT': 'YES',
+            'STRIP_STYLE': 'all',
+          },
+        }],
       ],
     },  # target libjingle
     {
@@ -537,6 +549,9 @@
               # deprecated functions and remove this flag.
               '-Wno-deprecated-declarations',
             ],
+            'DEPLOYMENT_POSTPROCESSING': 'YES',
+            'STRIP_INSTALLED_PRODUCT': 'YES',
+            'STRIP_STYLE': 'all',
           },
           'link_settings': {
             'xcode_settings': {
@@ -611,6 +626,15 @@
         'session/media/typingmonitor.cc',
         'session/media/typingmonitor.h',
         'session/media/voicechannel.h',
+      ],
+      'conditions': [
+        ['OS=="mac"', {
+          'xcode_settings': {
+            'DEPLOYMENT_POSTPROCESSING': 'YES',
+            'STRIP_INSTALLED_PRODUCT': 'YES',
+            'STRIP_STYLE': 'all',
+          },
+        }],
       ],
     },  # target libjingle_p2p
     {
@@ -688,6 +712,15 @@
         'app/webrtc/webrtcsession.h',
         'app/webrtc/webrtcsessiondescriptionfactory.cc',
         'app/webrtc/webrtcsessiondescriptionfactory.h',
+      ],
+      'conditions': [
+        ['OS=="mac"', {
+          'xcode_settings': {
+            'DEPLOYMENT_POSTPROCESSING': 'YES',
+            'STRIP_INSTALLED_PRODUCT': 'YES',
+            'STRIP_STYLE': 'all',
+          },
+        }],
       ],
     },  # target libjingle_peerconnection
   ],

@@ -92,6 +92,13 @@
             '<(webrtc_root)/modules/modules.gyp:video_render_module_impl',
           ],
         }],
+        ['OS=="mac"', {
+          'xcode_settings': {
+            'DEPLOYMENT_POSTPROCESSING': 'YES',
+            'STRIP_INSTALLED_PRODUCT': 'YES',
+            'STRIP_STYLE': 'all',
+          },
+        }],
       ],
     },
   ],
