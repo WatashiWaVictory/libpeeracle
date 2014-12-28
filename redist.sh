@@ -2,4 +2,4 @@ rm -rf redist_release
 
 mkdir -p redist_release/lib redist_release/include redist_release/bin
 
-find out/Release -type f \( -name webrtc.lib -or -name webrtc_common.lib -or -name rtc_base.lib -or -name rtc_base_approved.lib -or -name common_audio.lib -or -name common_video.lib -or -name rtc_p2p.lib -or -name rtc_sound.lib -or -name video_engine_core.lib -or -name voice_engine.lib -or -name libjingle_media.lib -or -name libjingle_p2p.lib -or -name libjingle_peerconnection.lib -or -name libwebsockets.lib -or -name peeracle.lib \) -exec mv {} redist_release/lib/ \;
+find out/Release -type f \( -name libwebrtc.a -or -name libwebrtc_common.a -or -name librtc_base.a -or -name librtc_base_approved.a -or -name libcommon_audio.a -or -name libcommon_video.a -or -name librtc_p2p.a -or -name librtc_sound.a -or -name libvideo_engine_core.a -or -name libvoice_engine.a -or -name libjingle_media.a -or -name libjingle_p2p.a -or -name libjingle_peerconnection.a -or -name libwebsockets.a -or -name libpeeracle.a \) -exec mv {} redist_release/lib/ \;
