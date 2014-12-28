@@ -96,7 +96,7 @@
           'xcode_settings': {
             'DEPLOYMENT_POSTPROCESSING': 'YES',
             'STRIP_INSTALLED_PRODUCT': 'YES',
-            'STRIP_STYLE': 'all',
+            'STRIP_STYLE': 'non-global',
           },
         }],
       ],

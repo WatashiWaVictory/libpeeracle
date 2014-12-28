@@ -285,7 +285,7 @@
             'CLANG_WARN_OBJC_MISSING_PROPERTY_SYNTHESIS': 'NO',
             'DEPLOYMENT_POSTPROCESSING': 'YES',
             'STRIP_INSTALLED_PRODUCT': 'YES',
-            'STRIP_STYLE': 'all',
+            'STRIP_STYLE': 'non-global',
           },
           'conditions': [
             ['OS=="ios"', {
@@ -344,7 +344,7 @@
           'xcode_settings': {
             'DEPLOYMENT_POSTPROCESSING': 'YES',
             'STRIP_INSTALLED_PRODUCT': 'YES',
-            'STRIP_STYLE': 'all',
+            'STRIP_STYLE': 'non-global',
           },
         }],
       ],
@@ -551,7 +551,7 @@
             ],
             'DEPLOYMENT_POSTPROCESSING': 'YES',
             'STRIP_INSTALLED_PRODUCT': 'YES',
-            'STRIP_STYLE': 'all',
+            'STRIP_STYLE': 'non-global',
           },
           'link_settings': {
             'xcode_settings': {
@@ -632,7 +632,7 @@
           'xcode_settings': {
             'DEPLOYMENT_POSTPROCESSING': 'YES',
             'STRIP_INSTALLED_PRODUCT': 'YES',
-            'STRIP_STYLE': 'all',
+            'STRIP_STYLE': 'non-global',
           },
         }],
       ],
@@ -718,7 +718,7 @@
           'xcode_settings': {
             'DEPLOYMENT_POSTPROCESSING': 'YES',
             'STRIP_INSTALLED_PRODUCT': 'YES',
-            'STRIP_STYLE': 'all',
+            'STRIP_STYLE': 'non-global',
           },
         }],
       ],
