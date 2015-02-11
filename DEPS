@@ -6,7 +6,7 @@
 vars = {
   'extra_gyp_flag': '-Dextra_gyp_flag=0',
   'chromium_git': 'https://chromium.googlesource.com',
-  'chromium_revision': '9070a8059b513108b09d30f96576b5ce11d0857a',
+  'chromium_revision': '601e6f32704fed600914fd5198c24395c4dc36f5',
   'peeracle_git': 'ssh://git@stash.dotstar.fr:7999',
 }
 
@@ -83,7 +83,7 @@ hooks = [
                '--directory',
                '--recursive',
                '--num_threads=10',
-               '--no_auth',
+#               '--no_auth',
                '--bucket', 'chromium-webrtc-resources',
                'src/resources'],
   },
