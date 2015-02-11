@@ -24,6 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #ifndef TALK_MEDIA_WEBRTC_SIMULCAST_H_
 #define TALK_MEDIA_WEBRTC_SIMULCAST_H_
 
@@ -47,6 +48,23 @@ enum SimulcastBitrateMode {
   SBM_COUNT
 };
 
+// Config for use with screen cast when temporal layers are enabled.
+struct ScreenshareLayerConfig {
+ public:
+  ScreenshareLayerConfig(int tl0_bitrate, int tl1_bitrate);
+
+  // Bitrates, for temporal layers 0 and 1.
+  int tl0_bitrate_kbps;
+  int tl1_bitrate_kbps;
+
+  static ScreenshareLayerConfig GetDefault();
+
+  // Parse bitrate from group name on format "(tl0_bitrate)-(tl1_bitrate)",
+  // eg. "100-1000" for the default rates.
+  static bool FromFieldTrialGroup(const std::string& group,
+                                  ScreenshareLayerConfig* config);
+};
+
 // TODO(pthatcher): Write unit tests just for these functions,
 // independent of WebrtcVideoEngine.
 
@@ -64,7 +82,6 @@ std::vector<webrtc::VideoStream> GetSimulcastConfig(
     SimulcastBitrateMode bitrate_mode,
     int width,
     int height,
-    int min_bitrate_bps,
     int max_bitrate_bps,
     int max_qp,
     int max_framerate);

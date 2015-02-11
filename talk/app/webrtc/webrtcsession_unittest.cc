@@ -1,6 +1,6 @@
 /*
  * libjingle
- * Copyright 2012, Google Inc.
+ * Copyright 2012 Google Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -354,7 +354,8 @@ class WebRtcSessionTest : public testing::Test {
         SocketAddress(), SocketAddress(), SocketAddress()));
     allocator_->set_flags(cricket::PORTALLOCATOR_DISABLE_TCP |
                          cricket::PORTALLOCATOR_DISABLE_RELAY |
-                         cricket::PORTALLOCATOR_ENABLE_BUNDLE);
+                         cricket::PORTALLOCATOR_ENABLE_BUNDLE |
+                         cricket::PORTALLOCATOR_ENABLE_SHARED_UFRAG);
     EXPECT_TRUE(channel_manager_->Init());
     desc_factory_->set_add_legacy_streams(false);
     allocator_->set_step_delay(cricket::kMinimumStepDelay);
@@ -1212,7 +1213,8 @@ class WebRtcSessionTest : public testing::Test {
     allocator_->AddRelay(relay_server);
     allocator_->set_step_delay(cricket::kMinimumStepDelay);
     allocator_->set_flags(cricket::PORTALLOCATOR_DISABLE_TCP |
-                          cricket::PORTALLOCATOR_ENABLE_BUNDLE);
+                          cricket::PORTALLOCATOR_ENABLE_BUNDLE |
+                          cricket::PORTALLOCATOR_ENABLE_SHARED_UFRAG);
   }
 
   cricket::FakeMediaEngine* media_engine_;

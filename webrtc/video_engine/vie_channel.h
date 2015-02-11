@@ -40,6 +40,7 @@ class I420FrameCallback;
 class PacedSender;
 class ProcessThread;
 class ReceiveStatisticsProxy;
+class ReportBlockStats;
 class RtcpRttStats;
 class ThreadWrapper;
 class ViEDecoderObserver;
@@ -170,7 +171,7 @@ class ViEChannel
                                 uint32_t* cumulative_lost,
                                 uint32_t* extended_max,
                                 uint32_t* jitter_samples,
-                                int32_t* rtt_ms);
+                                int64_t* rtt_ms);
 
   // Called on receipt of RTCP report block from remote side.
   void RegisterSendChannelRtcpStatisticsCallback(
@@ -181,7 +182,7 @@ class ViEChannel
                                     uint32_t* cumulative_lost,
                                     uint32_t* extended_max,
                                     uint32_t* jitter_samples,
-                                    int32_t* rtt_ms);
+                                    int64_t* rtt_ms);
 
   // Called on generation of RTCP stats
   void RegisterReceiveChannelRtcpStatisticsCallback(
@@ -363,7 +364,7 @@ class ViEChannel
   static bool ChannelDecodeThreadFunction(void* obj);
   bool ChannelDecodeProcess();
 
-  void OnRttUpdate(uint32_t rtt);
+  void OnRttUpdate(int64_t rtt);
 
  private:
   void ReserveRtpRtcpModules(size_t total_modules)
@@ -509,7 +510,8 @@ class ViEChannel
   int max_nack_reordering_threshold_;
   I420FrameCallback* pre_render_callback_;
 
-  std::map<uint32_t, RTCPReportBlock> prev_report_blocks_;
+  scoped_ptr<ReportBlockStats> report_block_stats_sender_;
+  scoped_ptr<ReportBlockStats> report_block_stats_receiver_;
 };
 
 }  // namespace webrtc

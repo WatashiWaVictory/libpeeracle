@@ -1,6 +1,6 @@
 #
 # libjingle
-# Copyright 2012, Google Inc.
+# Copyright 2012 Google Inc.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -23,7 +23,6 @@
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
 
 {
   'includes': ['build/common.gypi'],
@@ -278,6 +277,11 @@
               '-lstdc++',
             ],
           },
+          'all_dependent_settings': {
+            'xcode_settings': {
+              'CLANG_ENABLE_OBJC_ARC': 'YES',
+            },
+          },
           'xcode_settings': {
             'CLANG_ENABLE_OBJC_ARC': 'YES',
             # common.gypi enables this for mac but we want this to be disabled
@@ -364,8 +368,8 @@
         '<(webrtc_root)/webrtc.gyp:webrtc',
         '<(webrtc_root)/voice_engine/voice_engine.gyp:voice_engine',
         '<(webrtc_root)/sound/sound.gyp:rtc_sound',
-        '<(webrtc_root)/system_wrappers/source/system_wrappers.gyp:system_wrappers',
-        '<(webrtc_root)/system_wrappers/source/system_wrappers.gyp:system_wrappers_default',
+        '<(webrtc_root)/system_wrappers/system_wrappers.gyp:system_wrappers',
+        '<(webrtc_root)/system_wrappers/system_wrappers.gyp:system_wrappers_default',
         '<(webrtc_root)/libjingle/xmllite/xmllite.gyp:rtc_xmllite',
         '<(webrtc_root)/libjingle/xmpp/xmpp.gyp:rtc_xmpp',
         '<(webrtc_root)/p2p/p2p.gyp:rtc_p2p',
@@ -468,16 +472,16 @@
       ],
       'conditions': [
         ['build_with_chromium==1', {
-	  'dependencies': [
+          'dependencies': [
             '<(webrtc_root)/modules/modules.gyp:video_capture_module_impl',
             '<(webrtc_root)/modules/modules.gyp:video_render_module_impl',
-	  ],
-	}, {
-	  'dependencies': [
+          ],
+        }, {
+          'dependencies': [
             '<(webrtc_root)/modules/modules.gyp:video_capture_module_internal_impl',
             '<(webrtc_root)/modules/modules.gyp:video_render_module_internal_impl',
-	  ],
-	}],
+          ],
+        }],
         ['OS=="linux"', {
           'sources': [
             'media/devices/gtkvideorenderer.cc',
@@ -682,6 +686,7 @@
         'app/webrtc/peerconnection.h',
         'app/webrtc/peerconnectionfactory.cc',
         'app/webrtc/peerconnectionfactory.h',
+        'app/webrtc/peerconnectionfactoryproxy.h',
         'app/webrtc/peerconnectioninterface.h',
         'app/webrtc/peerconnectionproxy.h',
         'app/webrtc/portallocatorfactory.cc',

@@ -86,7 +86,6 @@
 #define _USE_MATH_DEFINES
 
 #include "webrtc/common_audio/resampler/sinc_resampler.h"
-#include "webrtc/system_wrappers/interface/compile_assert.h"
 #include "webrtc/system_wrappers/interface/cpu_features_wrapper.h"
 #include "webrtc/typedefs.h"
 

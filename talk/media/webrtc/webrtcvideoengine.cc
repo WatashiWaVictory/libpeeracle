@@ -138,36 +138,6 @@ class EncoderFactoryAdapter : public webrtc::VideoEncoderFactory {
   cricket::WebRtcVideoEncoderFactory* factory_;
 };
 
-// Wrap encoder factory to a simulcast encoder factory.
-class SimulcastEncoderFactory : public cricket::WebRtcVideoEncoderFactory {
- public:
-  // SimulcastEncoderFactory doesn't take ownership of |factory|, which is owned
-  // by e.g. PeerConnectionFactory.
-  explicit SimulcastEncoderFactory(cricket::WebRtcVideoEncoderFactory* factory)
-     : factory_(factory) {}
-  virtual ~SimulcastEncoderFactory() {}
-
-  virtual webrtc::VideoEncoder* CreateVideoEncoder(
-      webrtc::VideoCodecType type) OVERRIDE {
-    ASSERT(type == webrtc::kVideoCodecVP8);
-    ASSERT(factory_ != NULL);
-    return new webrtc::SimulcastEncoderAdapter(
-        webrtc::scoped_ptr<webrtc::VideoEncoderFactory>(
-            new EncoderFactoryAdapter(factory_)).Pass());
-  }
-
-  virtual const std::vector<VideoCodec>& codecs() const OVERRIDE {
-    return factory_->codecs();
-  }
-
-  virtual void DestroyVideoEncoder(webrtc::VideoEncoder* encoder) OVERRIDE {
-    delete encoder;
-  }
-
- private:
-  cricket::WebRtcVideoEncoderFactory* factory_;
-};
-
 }  // namespace
 
 namespace cricket {
@@ -314,6 +284,37 @@ std::vector<VideoCodec> DefaultVideoCodecList() {
   codecs.push_back(MakeVideoCodec(116, kRedCodecName));
   codecs.push_back(MakeVideoCodec(117, kUlpfecCodecName));
   return codecs;
+}
+
+WebRtcSimulcastEncoderFactory::WebRtcSimulcastEncoderFactory(
+    cricket::WebRtcVideoEncoderFactory* factory)
+    : factory_(factory) {
+}
+
+WebRtcSimulcastEncoderFactory::~WebRtcSimulcastEncoderFactory() {
+}
+
+bool WebRtcSimulcastEncoderFactory::UseSimulcastEncoderFactory(
+    const std::vector<WebRtcVideoEncoderFactory::VideoCodec>& codecs) {
+  return codecs.size() == 1 && codecs[0].type == webrtc::kVideoCodecVP8;
+}
+
+webrtc::VideoEncoder* WebRtcSimulcastEncoderFactory::CreateVideoEncoder(
+    webrtc::VideoCodecType type) {
+  ASSERT(type == webrtc::kVideoCodecVP8);
+  ASSERT(factory_ != NULL);
+  return new webrtc::SimulcastEncoderAdapter(
+      new EncoderFactoryAdapter(factory_));
+}
+
+const std::vector<WebRtcVideoEncoderFactory::VideoCodec>&
+WebRtcSimulcastEncoderFactory::codecs() const {
+  return factory_->codecs();
+}
+
+void WebRtcSimulcastEncoderFactory::DestroyVideoEncoder(
+    webrtc::VideoEncoder* encoder) {
+  delete encoder;
 }
 
 struct FlushBlackFrameData : public rtc::MessageData {
@@ -1690,15 +1691,15 @@ void WebRtcVideoEngine::SetExternalEncoderFactory(
     return;
 
   // No matter what happens we shouldn't hold on to a stale
-  // SimulcastEncoderFactory.
+  // WebRtcSimulcastEncoderFactory.
   simulcast_encoder_factory_.reset();
 
   if (encoder_factory) {
     const std::vector<WebRtcVideoEncoderFactory::VideoCodec>& codecs =
         encoder_factory->codecs();
-    if (codecs.size() == 1 && codecs[0].type == webrtc::kVideoCodecVP8) {
+    if (WebRtcSimulcastEncoderFactory::UseSimulcastEncoderFactory(codecs)) {
       simulcast_encoder_factory_.reset(
-          new SimulcastEncoderFactory(encoder_factory));
+          new WebRtcSimulcastEncoderFactory(encoder_factory));
       encoder_factory = simulcast_encoder_factory_.get();
     }
   }
@@ -2243,6 +2244,17 @@ bool WebRtcVideoMediaChannel::RemoveRecvStream(uint32 ssrc) {
 }
 
 bool WebRtcVideoMediaChannel::RemoveRecvStreamInternal(uint32 ssrc) {
+  // First remove the RTX SSRC mapping, to include this step even if exiting in
+  // the default receive channel logic below.
+  SsrcMap::iterator rtx_it = rtx_to_primary_ssrc_.begin();
+  while (rtx_it != rtx_to_primary_ssrc_.end()) {
+    if (rtx_it->second == ssrc) {
+      rtx_to_primary_ssrc_.erase(rtx_it++);
+    } else {
+      ++rtx_it;
+    }
+  }
+
   WebRtcVideoChannelRecvInfo* recv_channel = GetRecvChannelBySsrc(ssrc);
   if (!recv_channel) {
     // TODO(perkj): Remove this once BWE works properly across different send
@@ -2261,16 +2273,6 @@ bool WebRtcVideoMediaChannel::RemoveRecvStreamInternal(uint32 ssrc) {
       return true;
     }
     return false;
-  }
-
-  // Remove any RTX SSRC mappings to this stream.
-  SsrcMap::iterator rtx_it = rtx_to_primary_ssrc_.begin();
-  while (rtx_it != rtx_to_primary_ssrc_.end()) {
-    if (rtx_it->second == ssrc) {
-      rtx_to_primary_ssrc_.erase(rtx_it++);
-    } else {
-      ++rtx_it;
-    }
   }
 
   int channel_id = recv_channel->channel_id();
@@ -2678,7 +2680,7 @@ bool WebRtcVideoMediaChannel::GetStats(const StatsOptions& options,
       // It's not a fatal error if we can't, since RTCP may not have arrived
       // yet.
       webrtc::RtcpStatistics outgoing_stream_rtcp_stats;
-      int outgoing_stream_rtt_ms;
+      int64_t outgoing_stream_rtt_ms;
 
       if (engine_->vie()->rtp()->GetSendChannelRtcpStatistics(
           channel_id,
@@ -2752,8 +2754,8 @@ bool WebRtcVideoMediaChannel::GetStats(const StatsOptions& options,
     }
     VideoReceiverInfo rinfo;
     rinfo.add_ssrc(ssrc);
-    rinfo.bytes_rcvd = received.bytes;
-    rinfo.packets_rcvd = received.packets;
+    rinfo.bytes_rcvd = received.transmitted.payload_bytes;
+    rinfo.packets_rcvd = received.transmitted.packets;
     rinfo.packets_lost = -1;
     rinfo.packets_concealed = -1;
     rinfo.fraction_lost = -1;  // from SentRTCP
@@ -2782,7 +2784,7 @@ bool WebRtcVideoMediaChannel::GetStats(const StatsOptions& options,
 
     // Get our locally created statistics of the received RTP stream.
     webrtc::RtcpStatistics incoming_stream_rtcp_stats;
-    int incoming_stream_rtt_ms;
+    int64_t incoming_stream_rtt_ms;
     if (engine_->vie()->rtp()->GetReceiveChannelRtcpStatistics(
         channel->channel_id(),
         incoming_stream_rtcp_stats,

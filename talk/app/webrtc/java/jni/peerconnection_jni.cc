@@ -1,6 +1,6 @@
 /*
  * libjingle
- * Copyright 2013, Google Inc.
+ * Copyright 2013 Google Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -83,7 +83,6 @@
 #include "webrtc/base/ssladapter.h"
 #include "webrtc/common_video/interface/texture_video_frame.h"
 #include "webrtc/modules/video_coding/codecs/interface/video_codec_interface.h"
-#include "webrtc/system_wrappers/interface/compile_assert.h"
 #include "webrtc/system_wrappers/interface/trace.h"
 #include "webrtc/video_engine/include/vie_base.h"
 #include "webrtc/voice_engine/include/voe_base.h"
@@ -249,11 +248,11 @@ static JNIEnv* AttachCurrentThreadIfNeeded() {
 // because the alternative (of silently passing a 32-bit pointer to a vararg
 // function expecting a 64-bit param) picks up garbage in the high 32 bits.
 static jlong jlongFromPointer(void* ptr) {
-  COMPILE_ASSERT(sizeof(intptr_t) <= sizeof(jlong),
-                 Time_to_rethink_the_use_of_jlongs);
+  static_assert(sizeof(intptr_t) <= sizeof(jlong),
+                "Time to rethink the use of jlongs");
   // Going through intptr_t to be obvious about the definedness of the
   // conversion from pointer to integral type.  intptr_t to jlong is a standard
-  // widening by the COMPILE_ASSERT above.
+  // widening by the static_assert above.
   jlong ret = reinterpret_cast<intptr_t>(ptr);
   assert(reinterpret_cast<void*>(ret) == ptr);
   return ret;
@@ -1003,14 +1002,14 @@ class StatsObserverWrapper : public StatsObserver {
     int i = 0;
     for (const auto* report : reports) {
       ScopedLocalRefFrame local_ref_frame(jni);
-      jstring j_id = JavaStringFromStdString(jni, report->id);
-      jstring j_type = JavaStringFromStdString(jni, report->type);
-      jobjectArray j_values = ValuesToJava(jni, report->values);
+      jstring j_id = JavaStringFromStdString(jni, report->id().ToString());
+      jstring j_type = JavaStringFromStdString(jni, report->TypeToString());
+      jobjectArray j_values = ValuesToJava(jni, report->values());
       jobject j_report = jni->NewObject(*j_stats_report_class_,
                                         j_stats_report_ctor_,
                                         j_id,
                                         j_type,
-                                        report->timestamp,
+                                        report->timestamp(),
                                         j_values);
       jni->SetObjectArrayElement(reports_array, i++, j_report);
     }
@@ -1022,11 +1021,11 @@ class StatsObserverWrapper : public StatsObserver {
         values.size(), *j_value_class_, NULL);
     for (int i = 0; i < values.size(); ++i) {
       ScopedLocalRefFrame local_ref_frame(jni);
-      const StatsReport::Value& value = values[i];
+      const auto& value = values[i];
       // Should we use the '.name' enum value here instead of converting the
       // name to a string?
-      jstring j_name = JavaStringFromStdString(jni, value.display_name());
-      jstring j_value = JavaStringFromStdString(jni, value.value);
+      jstring j_name = JavaStringFromStdString(jni, value->display_name());
+      jstring j_value = JavaStringFromStdString(jni, value->value);
       jobject j_element_value =
           jni->NewObject(*j_value_class_, j_value_ctor_, j_name, j_value);
       jni->SetObjectArrayElement(j_values, i, j_element_value);
@@ -1271,7 +1270,7 @@ class MediaCodecVideoEncoder : public webrtc::VideoEncoder,
       webrtc::EncodedImageCallback* callback) OVERRIDE;
   virtual int32_t Release() OVERRIDE;
   virtual int32_t SetChannelParameters(uint32_t /* packet_loss */,
-                                       int /* rtt */) OVERRIDE;
+                                       int64_t /* rtt */) OVERRIDE;
   virtual int32_t SetRates(uint32_t new_bit_rate, uint32_t frame_rate) OVERRIDE;
 
   // rtc::MessageHandler implementation.
@@ -1472,7 +1471,7 @@ int32_t MediaCodecVideoEncoder::Release() {
 }
 
 int32_t MediaCodecVideoEncoder::SetChannelParameters(uint32_t /* packet_loss */,
-                                                     int /* rtt */) {
+                                                     int64_t /* rtt */) {
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
@@ -3177,10 +3176,10 @@ JOW(jobject, PeerConnection_iceConnectionState)(JNIEnv* jni, jobject j_pc) {
   return JavaEnumFromIndex(jni, "PeerConnection$IceConnectionState", state);
 }
 
-JOW(jobject, PeerGathering_iceGatheringState)(JNIEnv* jni, jobject j_pc) {
+JOW(jobject, PeerConnection_iceGatheringState)(JNIEnv* jni, jobject j_pc) {
   PeerConnectionInterface::IceGatheringState state =
       ExtractNativePC(jni, j_pc)->ice_gathering_state();
-  return JavaEnumFromIndex(jni, "PeerGathering$IceGatheringState", state);
+  return JavaEnumFromIndex(jni, "PeerConnection$IceGatheringState", state);
 }
 
 JOW(void, PeerConnection_close)(JNIEnv* jni, jobject j_pc) {

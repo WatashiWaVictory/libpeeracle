@@ -24,6 +24,7 @@
 #include "webrtc/modules/video_coding/main/interface/video_coding.h"
 #include "webrtc/system_wrappers/interface/critical_section_wrapper.h"
 #include "webrtc/system_wrappers/interface/logging.h"
+#include "webrtc/system_wrappers/interface/metrics.h"
 #include "webrtc/system_wrappers/interface/tick_util.h"
 #include "webrtc/system_wrappers/interface/timestamp_extrapolator.h"
 #include "webrtc/system_wrappers/interface/trace.h"
@@ -62,10 +63,24 @@ ViEReceiver::ViEReceiver(const int32_t channel_id,
 }
 
 ViEReceiver::~ViEReceiver() {
+  UpdateHistograms();
   if (rtp_dump_) {
     rtp_dump_->Stop();
     RtpDump::DestroyRtpDump(rtp_dump_);
     rtp_dump_ = NULL;
+  }
+}
+
+void ViEReceiver::UpdateHistograms() {
+  FecPacketCounter counter = fec_receiver_->GetPacketCounter();
+  if (counter.num_packets > 0) {
+    RTC_HISTOGRAM_PERCENTAGE("WebRTC.Video.ReceivedFecPacketsInPercent",
+        counter.num_fec_packets * 100 / counter.num_packets);
+  }
+  if (counter.num_fec_packets > 0) {
+    RTC_HISTOGRAM_PERCENTAGE(
+        "WebRTC.Video.RecoveredMediaPacketsInPercentOfFec",
+            counter.num_recovered_packets * 100 / counter.num_fec_packets);
   }
 }
 
@@ -112,6 +127,10 @@ void ViEReceiver::SetRtxSsrc(uint32_t ssrc) {
 
 bool ViEReceiver::GetRtxSsrc(uint32_t* ssrc) const {
   return rtp_payload_registry_->GetRtxSsrc(ssrc);
+}
+
+bool ViEReceiver::IsFecEnabled() const {
+  return rtp_payload_registry_->ulpfec_payload_type() > -1;
 }
 
 uint32_t ViEReceiver::GetRemoteSsrc() const {
@@ -304,7 +323,7 @@ bool ViEReceiver::ParseAndHandleEncapsulatingHeader(const uint8_t* packet,
   if (rtp_payload_registry_->IsRed(header)) {
     int8_t ulpfec_pt = rtp_payload_registry_->ulpfec_payload_type();
     if (packet[header.headerLength] == ulpfec_pt)
-      rtp_receive_statistics_->FecPacketReceived(header.ssrc);
+      rtp_receive_statistics_->FecPacketReceived(header, packet_length);
     if (fec_receiver_->AddReceivedRedPacket(
             header, packet, packet_length, ulpfec_pt) != 0) {
       return false;
@@ -365,7 +384,7 @@ int ViEReceiver::InsertRTCPPacket(const uint8_t* rtcp_packet,
     return ret;
   }
 
-  uint16_t rtt = 0;
+  int64_t rtt = 0;
   rtp_rtcp_->RTT(rtp_receiver_->SSRC(), &rtt, NULL, NULL, NULL);
   if (rtt == 0) {
     // Waiting for valid rtt.
@@ -454,7 +473,7 @@ bool ViEReceiver::IsPacketRetransmitted(const RTPHeader& header,
   if (!statistician)
     return false;
   // Check if this is a retransmission.
-  uint16_t min_rtt = 0;
+  int64_t min_rtt = 0;
   rtp_rtcp_->RTT(rtp_receiver_->SSRC(), NULL, NULL, &min_rtt, NULL);
   return !in_order &&
       statistician->IsRetransmitOfOldPacket(header, min_rtt);

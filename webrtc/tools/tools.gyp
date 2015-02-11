@@ -15,10 +15,10 @@
       'target_name': 'video_quality_analysis',
       'type': 'static_library',
       'dependencies': [
-        '<(DEPTH)/third_party/libyuv/libyuv.gyp:libyuv',
+        '<(webrtc_root)/common_video/common_video.gyp:common_video',
       ],
       'export_dependent_settings': [
-        '<(DEPTH)/third_party/libyuv/libyuv.gyp:libyuv',
+        '<(webrtc_root)/common_video/common_video.gyp:common_video',
       ],
       'sources': [
         'frame_analyzer/video_quality_analysis.h',
@@ -51,8 +51,8 @@
       'target_name': 'rgba_to_i420_converter',
       'type': 'executable',
       'dependencies': [
+        '<(webrtc_root)/common_video/common_video.gyp:common_video',
         '<(webrtc_root)/tools/internal_tools.gyp:command_line_parser',
-        '<(DEPTH)/third_party/libyuv/libyuv.gyp:libyuv',
       ],
       'sources': [
         'converter/converter.h',
@@ -91,7 +91,7 @@
       'type': 'executable',
       'dependencies': [
         '<(webrtc_root)/voice_engine/voice_engine.gyp:voice_engine',
-        '<(webrtc_root)/system_wrappers/source/system_wrappers.gyp:system_wrappers_default',
+        '<(webrtc_root)/system_wrappers/system_wrappers.gyp:system_wrappers_default',
       ],
       'sources': [
         'force_mic_volume_max/force_mic_volume_max.cc',
@@ -120,7 +120,7 @@
           'dependencies': [
             '<(DEPTH)/testing/gtest.gyp:gtest',
             '<(DEPTH)/third_party/gflags/gflags.gyp:gflags',
-            '<(webrtc_root)/system_wrappers/source/system_wrappers.gyp:system_wrappers_default',
+            '<(webrtc_root)/system_wrappers/system_wrappers.gyp:system_wrappers_default',
             '<(webrtc_root)/test/test.gyp:channel_transport',
             '<(webrtc_root)/test/test.gyp:test_support',
             'agc_manager',
@@ -137,7 +137,7 @@
             '<(DEPTH)/testing/gtest.gyp:gtest',
             '<(DEPTH)/third_party/gflags/gflags.gyp:gflags',
             '<(webrtc_root)/test/test.gyp:test_support',
-            '<(webrtc_root)/system_wrappers/source/system_wrappers.gyp:system_wrappers_default',
+            '<(webrtc_root)/system_wrappers/system_wrappers.gyp:system_wrappers_default',
             'agc_manager',
           ],
           'sources': [
@@ -163,7 +163,7 @@
           'dependencies': [
             '<(webrtc_root)/test/test.gyp:channel_transport',
             '<(webrtc_root)/voice_engine/voice_engine.gyp:voice_engine',
-            '<(webrtc_root)/system_wrappers/source/system_wrappers.gyp:system_wrappers_default',
+            '<(webrtc_root)/system_wrappers/system_wrappers.gyp:system_wrappers_default',
             '<(DEPTH)/testing/gtest.gyp:gtest',
             '<(DEPTH)/third_party/gflags/gflags.gyp:gflags',
           ],

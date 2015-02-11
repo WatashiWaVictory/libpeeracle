@@ -43,7 +43,7 @@ public:
     void SetSsrcs(uint32_t main_ssrc,
                   const std::set<uint32_t>& registered_ssrcs);
     void SetRelaySSRC(uint32_t ssrc);
-    int32_t SetRemoteSSRC(uint32_t ssrc);
+    void SetRemoteSSRC(uint32_t ssrc);
     uint32_t RemoteSSRC() const;
 
     uint32_t RelaySSRC() const;
@@ -55,7 +55,8 @@ public:
         RTCPHelp::RTCPPacketInformation& rtcpPacketInformation,
         RTCPUtility::RTCPParserV2 *rtcpParser);
 
-    void TriggerCallbacksFromRTCPPacket(RTCPHelp::RTCPPacketInformation& rtcpPacketInformation);
+    void TriggerCallbacksFromRTCPPacket(
+        RTCPHelp::RTCPPacketInformation& rtcpPacketInformation);
 
     // get received cname
     int32_t CNAME(uint32_t remoteSSRC, char cName[RTCP_CNAME_SIZE]) const;
@@ -71,14 +72,14 @@ public:
 
     // get rtt
     int32_t RTT(uint32_t remoteSSRC,
-                uint16_t* RTT,
-                uint16_t* avgRTT,
-                uint16_t* minRTT,
-                uint16_t* maxRTT) const;
+                int64_t* RTT,
+                int64_t* avgRTT,
+                int64_t* minRTT,
+                int64_t* maxRTT) const;
 
     int32_t SenderInfoReceived(RTCPSenderInfo* senderInfo) const;
 
-    bool GetAndResetXrRrRtt(uint16_t* rtt_ms);
+    bool GetAndResetXrRrRtt(int64_t* rtt_ms);
 
     // get statistics
     int32_t StatisticsReceived(
@@ -119,16 +120,17 @@ protected:
      uint32_t remoteSSRC);
  RTCPHelp::RTCPReceiveInformation* GetReceiveInformation(uint32_t remoteSSRC);
 
-    void UpdateReceiveInformation( RTCPHelp::RTCPReceiveInformation& receiveInformation);
+    void UpdateReceiveInformation(
+        RTCPHelp::RTCPReceiveInformation& receiveInformation);
 
-    void HandleSenderReceiverReport(RTCPUtility::RTCPParserV2& rtcpParser,
-                                    RTCPHelp::RTCPPacketInformation& rtcpPacketInformation);
+    void HandleSenderReceiverReport(
+        RTCPUtility::RTCPParserV2& rtcpParser,
+        RTCPHelp::RTCPPacketInformation& rtcpPacketInformation);
 
     void HandleReportBlock(
         const RTCPUtility::RTCPPacket& rtcpPacket,
         RTCPHelp::RTCPPacketInformation& rtcpPacketInformation,
-        uint32_t remoteSSRC,
-        uint8_t numberOfReportBlocks);
+        uint32_t remoteSSRC);
 
     void HandleSDES(RTCPUtility::RTCPParserV2& rtcpParser);
 
@@ -149,8 +151,9 @@ protected:
         const RTCPUtility::RTCPPacket& packet,
         RTCPHelp::RTCPPacketInformation& rtcpPacketInformation);
 
-    void HandleXRVOIPMetric(RTCPUtility::RTCPParserV2& rtcpParser,
-                            RTCPHelp::RTCPPacketInformation& rtcpPacketInformation);
+    void HandleXRVOIPMetric(
+        RTCPUtility::RTCPParserV2& rtcpParser,
+        RTCPHelp::RTCPPacketInformation& rtcpPacketInformation);
 
     void HandleNACK(RTCPUtility::RTCPParserV2& rtcpParser,
                     RTCPHelp::RTCPPacketInformation& rtcpPacketInformation);
@@ -257,7 +260,7 @@ protected:
   uint32_t _lastReceivedXRNTPsecs;
   uint32_t _lastReceivedXRNTPfrac;
   // Estimated rtt, zero when there is no valid estimate.
-  uint16_t xr_rr_rtt_ms_;
+  int64_t xr_rr_rtt_ms_;
 
   // Received report blocks.
   ReportBlockMap _receivedReportBlockMap

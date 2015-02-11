@@ -173,20 +173,19 @@ class RTPSender : public RTPSenderInterface {
   int SelectiveRetransmissions() const;
   int SetSelectiveRetransmissions(uint8_t settings);
   void OnReceivedNACK(const std::list<uint16_t>& nack_sequence_numbers,
-                      uint16_t avg_rtt);
+                      int64_t avg_rtt);
 
   void SetStorePacketsStatus(bool enable, uint16_t number_to_store);
 
   bool StorePackets() const;
 
-  int32_t ReSendPacket(uint16_t packet_id, uint32_t min_resend_time = 0);
+  int32_t ReSendPacket(uint16_t packet_id, int64_t min_resend_time = 0);
 
   bool ProcessNACKBitRate(uint32_t now);
 
   // RTX.
-  void SetRTXStatus(int mode);
-
-  void RTXStatus(int* mode, uint32_t* ssrc, int* payload_type) const;
+  void SetRtxStatus(int mode);
+  int RtxStatus() const;
 
   uint32_t RtxSsrc() const;
   void SetRtxSsrc(uint32_t ssrc);

@@ -220,7 +220,13 @@ class RtpRtcp : public Module {
     * Turn on/off sending RTX (RFC 4588). The modes can be set as a combination
     * of values of the enumerator RtxMode.
     */
-    virtual void SetRTXSendStatus(int modes) = 0;
+    virtual void SetRtxSendStatus(int modes) = 0;
+
+    /*
+    * Get status of sending RTX (RFC 4588). The returned value can be
+    * a combination of values of the enumerator RtxMode.
+    */
+    virtual int RtxSendStatus() const = 0;
 
     // Sets the SSRC to use when sending RTX packets. This doesn't enable RTX,
     // only the SSRC is set.
@@ -229,12 +235,6 @@ class RtpRtcp : public Module {
     // Sets the payload type to use when sending RTX packets. Note that this
     // doesn't enable RTX, only the payload type is set.
     virtual void SetRtxSendPayloadType(int payload_type) = 0;
-
-    /*
-    * Get status of sending RTX (RFC 4588) on a specific SSRC.
-    */
-    virtual void RTXSendStatus(int* modes, uint32_t* ssrc,
-                               int* payloadType) const = 0;
 
     /*
     *   sends kRtcpByeCode when going from true to false
@@ -376,10 +376,10 @@ class RtpRtcp : public Module {
     *   return -1 on failure else 0
     */
     virtual int32_t RTT(uint32_t remoteSSRC,
-                        uint16_t* RTT,
-                        uint16_t* avgRTT,
-                        uint16_t* minRTT,
-                        uint16_t* maxRTT) const = 0;
+                        int64_t* RTT,
+                        int64_t* avgRTT,
+                        int64_t* minRTT,
+                        int64_t* maxRTT) const = 0;
 
     /*
     *   Force a send of a RTCP packet

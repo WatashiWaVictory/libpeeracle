@@ -1,6 +1,6 @@
 /*
  * libjingle
- * Copyright 2012, Google Inc.
+ * Copyright 2012 Google Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -135,6 +135,10 @@ class WebRtcSession : public cricket::BaseSession,
   }
   virtual cricket::DataChannel* data_channel() {
     return data_channel_.get();
+  }
+
+  virtual const MediaStreamSignaling* mediastream_signaling() const {
+    return mediastream_signaling_;
   }
 
   void SetSdesPolicy(cricket::SecurePolicy secure_policy);

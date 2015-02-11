@@ -25,16 +25,6 @@
   ],
   'targets': [
     {
-      # Temporary target until Chromium's
-      # src/third_party/libjingle/libjingle.gyp is updated to use rtc_base.
-      # TODO(kjellander): Remove when r7140 is rolled into Chromium's DEPS.
-      'target_name': 'webrtc_base',
-      'type': 'none',
-      'dependencies': [
-        'rtc_base',
-      ],
-    },
-    {
       # The subset of rtc_base approved for use outside of libjingle.
       'target_name': 'rtc_base_approved',
       'type': 'static_library',
@@ -54,7 +44,11 @@
         'stringencode.h',
         'stringutils.cc',
         'stringutils.h',
+        'template_util.h',
         'thread_annotations.h',
+        'thread_checker.h',
+        'thread_checker_impl.cc',
+        'thread_checker_impl.h',
         'timeutils.cc',
         'timeutils.h',
       ],
@@ -280,9 +274,6 @@
         'testclient.h',
         'thread.cc',
         'thread.h',
-        'thread_checker.h',
-        'thread_checker_impl.cc',
-        'thread_checker_impl.h',
         'timing.cc',
         'timing.h',
         'transformadapter.cc',

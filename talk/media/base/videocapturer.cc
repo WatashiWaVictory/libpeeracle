@@ -1,28 +1,30 @@
-// libjingle
-// Copyright 2010 Google Inc.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//  1. Redistributions of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//  3. The name of the author may not be used to endorse or promote products
-//     derived from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
-// WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-// MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
-// EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
-// OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-// WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
-// OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
-// ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
+/*
+ * libjingle
+ * Copyright 2010 Google Inc.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *  1. Redistributions of source code must retain the above copyright notice,
+ *     this list of conditions and the following disclaimer.
+ *  2. Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *  3. The name of the author may not be used to endorse or promote products
+ *     derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ * EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 // Implementation file of class VideoCapturer.
 
 #include "talk/media/base/videocapturer.h"
@@ -362,6 +364,10 @@ void VideoCapturer::OnFrameCaptured(VideoCapturer*,
     return;
   }
 #if !defined(DISABLE_YUV)
+
+  // Use a temporary buffer to scale
+  rtc::scoped_ptr<uint8[]> scale_buffer;
+
   if (IsScreencast()) {
     int scaled_width, scaled_height;
     if (screencast_max_pixels_ > 0) {
@@ -388,6 +394,8 @@ void VideoCapturer::OnFrameCaptured(VideoCapturer*,
       }
       CapturedFrame* modified_frame =
           const_cast<CapturedFrame*>(captured_frame);
+      const int modified_frame_size = scaled_width * scaled_height * 4;
+      scale_buffer.reset(new uint8[modified_frame_size]);
       // Compute new width such that width * height is less than maximum but
       // maintains original captured frame aspect ratio.
       // Round down width to multiple of 4 so odd width won't round up beyond
@@ -396,12 +404,13 @@ void VideoCapturer::OnFrameCaptured(VideoCapturer*,
       libyuv::ARGBScale(reinterpret_cast<const uint8*>(captured_frame->data),
                         captured_frame->width * 4, captured_frame->width,
                         captured_frame->height,
-                        reinterpret_cast<uint8*>(modified_frame->data),
+                        scale_buffer.get(),
                         scaled_width * 4, scaled_width, scaled_height,
                         libyuv::kFilterBilinear);
       modified_frame->width = scaled_width;
       modified_frame->height = scaled_height;
       modified_frame->data_size = scaled_width * 4 * scaled_height;
+      modified_frame->data = scale_buffer.get();
     }
   }
 

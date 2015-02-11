@@ -258,7 +258,7 @@ class FakeReceiveStatistics : public NullReceiveStatistics {
     virtual uint32_t BitrateReceived() const OVERRIDE { return 0; }
     virtual void ResetStatistics() OVERRIDE {}
     virtual bool IsRetransmitOfOldPacket(const RTPHeader& header,
-                                         int min_rtt) const OVERRIDE {
+                                         int64_t min_rtt) const OVERRIDE {
       return false;
     }
 
@@ -960,7 +960,8 @@ TEST_F(VideoSendStreamTest, ProducesStats) {
         const SsrcStats& entry = stats.substreams[ssrc];
         if (entry.frame_counts.key_frames > 0 &&
             entry.frame_counts.delta_frames > 0 &&
-            entry.total_bitrate_bps > 0 && entry.rtp_stats.packets > 0u &&
+            entry.total_bitrate_bps > 0 &&
+            entry.rtp_stats.transmitted.packets > 0u &&
             entry.avg_delay_ms > 0 && entry.max_delay_ms > 0) {
           return true;
         }
@@ -1302,7 +1303,7 @@ TEST_F(VideoSendStreamTest, EncoderIsProperlyInitializedAndDestroyed) {
     }
 
     virtual int32_t SetChannelParameters(uint32_t packetLoss,
-                                         int rtt) OVERRIDE {
+                                         int64_t rtt) OVERRIDE {
       EXPECT_TRUE(IsReadyForEncode());
       return 0;
     }

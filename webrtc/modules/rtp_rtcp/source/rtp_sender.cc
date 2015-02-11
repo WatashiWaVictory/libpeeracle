@@ -383,9 +383,14 @@ size_t RTPSender::MaxPayloadLength() const {
 
 uint16_t RTPSender::PacketOverHead() const { return packet_over_head_; }
 
-void RTPSender::SetRTXStatus(int mode) {
+void RTPSender::SetRtxStatus(int mode) {
   CriticalSectionScoped cs(send_critsect_);
   rtx_ = mode;
+}
+
+int RTPSender::RtxStatus() const {
+  CriticalSectionScoped cs(send_critsect_);
+  return rtx_;
 }
 
 void RTPSender::SetRtxSsrc(uint32_t ssrc) {
@@ -396,14 +401,6 @@ void RTPSender::SetRtxSsrc(uint32_t ssrc) {
 uint32_t RTPSender::RtxSsrc() const {
   CriticalSectionScoped cs(send_critsect_);
   return ssrc_rtx_;
-}
-
-void RTPSender::RTXStatus(int* mode, uint32_t* ssrc,
-                          int* payload_type) const {
-  CriticalSectionScoped cs(send_critsect_);
-  *mode = rtx_;
-  *ssrc = ssrc_rtx_;
-  *payload_type = payload_type_rtx_;
 }
 
 void RTPSender::SetRtxPayloadType(int payload_type) {
@@ -653,7 +650,7 @@ bool RTPSender::StorePackets() const {
   return packet_history_.StorePackets();
 }
 
-int32_t RTPSender::ReSendPacket(uint16_t packet_id, uint32_t min_resend_time) {
+int32_t RTPSender::ReSendPacket(uint16_t packet_id, int64_t min_resend_time) {
   size_t length = IP_PACKET_SIZE;
   uint8_t data_buffer[IP_PACKET_SIZE];
   int64_t capture_time_ms;
@@ -720,7 +717,7 @@ int RTPSender::SetSelectiveRetransmissions(uint8_t settings) {
 }
 
 void RTPSender::OnReceivedNACK(const std::list<uint16_t>& nack_sequence_numbers,
-                               uint16_t avg_rtt) {
+                               int64_t avg_rtt) {
   TRACE_EVENT2("webrtc_rtp", "RTPSender::OnReceivedNACK",
                "num_seqnum", nack_sequence_numbers.size(), "avg_rtt", avg_rtt);
   const int64_t now = clock_->TimeInMilliseconds();
@@ -897,25 +894,29 @@ void RTPSender::UpdateRtpStats(const uint8_t* buffer,
   }
 
   total_bitrate_sent_.Update(packet_length);
-  ++counters->packets;
-  if (counters->packets == 1) {
+  ++counters->transmitted.packets;
+  if (counters->first_packet_time_ms == -1) {
     counters->first_packet_time_ms = clock_->TimeInMilliseconds();
   }
   if (IsFecPacket(buffer, header)) {
-    ++counters->fec_packets;
+    ++counters->fec.packets;
+    counters->fec.payload_bytes +=
+        packet_length - (header.headerLength + header.paddingLength);
+    counters->fec.header_bytes += header.headerLength;
+    counters->fec.padding_bytes += header.paddingLength;
   }
 
   if (is_retransmit) {
-    ++counters->retransmitted_packets;
-    counters->retransmitted_bytes +=
+    ++counters->retransmitted.packets;
+    counters->retransmitted.payload_bytes +=
         packet_length - (header.headerLength + header.paddingLength);
-    counters->retransmitted_header_bytes += header.headerLength;
-    counters->retransmitted_padding_bytes += header.paddingLength;
+    counters->retransmitted.header_bytes += header.headerLength;
+    counters->retransmitted.padding_bytes += header.paddingLength;
   }
-  counters->bytes +=
+  counters->transmitted.payload_bytes +=
       packet_length - (header.headerLength + header.paddingLength);
-  counters->header_bytes += header.headerLength;
-  counters->padding_bytes += header.paddingLength;
+  counters->transmitted.header_bytes += header.headerLength;
+  counters->transmitted.padding_bytes += header.paddingLength;
 
   if (rtp_stats_callback_) {
     rtp_stats_callback_->DataCountersUpdated(*counters, ssrc);

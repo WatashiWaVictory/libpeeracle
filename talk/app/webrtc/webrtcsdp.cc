@@ -1,6 +1,6 @@
 /*
  * libjingle
- * Copyright 2011, Google Inc.
+ * Copyright 2011 Google Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,6 +32,7 @@
 #include <algorithm>
 #include <string>
 #include <vector>
+#include <ctype.h>
 
 #include "talk/app/webrtc/jsepicecandidate.h"
 #include "talk/app/webrtc/jsepsessiondescription.h"
@@ -456,7 +457,8 @@ static bool GetLine(const std::string& message,
   // where <type> MUST be exactly one case-significant character and
   // <value> is structured text whose format depends on <type>.
   // Whitespace MUST NOT be used on either side of the "=" sign.
-  if (cline[0] == kSdpDelimiterSpace ||
+  if (line->length() < 3 ||
+      !islower(cline[0]) ||
       cline[1] != kSdpDelimiterEqual ||
       cline[2] == kSdpDelimiterSpace) {
     *pos = line_begin;
@@ -1088,8 +1090,7 @@ bool ParseCandidate(const std::string& message, Candidate* candidate,
     }
   }
 
-  const std::string id;
-  *candidate = Candidate(id, component_id, cricket::ProtoToString(protocol),
+  *candidate = Candidate(component_id, cricket::ProtoToString(protocol),
                          address, priority, username, password, candidate_type,
                          generation, foundation);
   candidate->set_related_address(related_address);

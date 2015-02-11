@@ -10,9 +10,12 @@
 
 #include "webrtc/modules/remote_bitrate_estimator/test/bwe_test.h"
 
+#include "webrtc/base/common.h"
+#include "webrtc/modules/interface/module_common_types.h"
 #include "webrtc/modules/remote_bitrate_estimator/test/bwe_test_baselinefile.h"
 #include "webrtc/modules/remote_bitrate_estimator/test/bwe_test_framework.h"
 #include "webrtc/modules/remote_bitrate_estimator/include/remote_bitrate_estimator.h"
+#include "webrtc/modules/rtp_rtcp/interface/receive_statistics.h"
 #include "webrtc/system_wrappers/interface/clock.h"
 #include "webrtc/system_wrappers/interface/scoped_ptr.h"
 
@@ -23,13 +26,13 @@ namespace webrtc {
 namespace testing {
 namespace bwe {
 
-class TestedEstimator : public RemoteBitrateObserver {
+class PacketReceiver : public RemoteBitrateObserver {
  public:
   static const uint32_t kRemoteBitrateEstimatorMinBitrateBps = 30000;
   static const int kDelayPlotIntervalMs = 100;
 
-  TestedEstimator(const string& test_name,
-                  const BweTestConfig::EstimatorConfig& config)
+  PacketReceiver(const string& test_name,
+                 const BweTestConfig::EstimatorConfig& config)
       : debug_name_(config.debug_name),
         delay_log_prefix_(),
         estimate_log_prefix_(),
@@ -38,9 +41,12 @@ class TestedEstimator : public RemoteBitrateObserver {
         plot_estimate_(config.plot_estimate),
         clock_(0),
         stats_(),
+        recv_stats_(ReceiveStatistics::Create(&clock_)),
         latest_estimate_bps_(-1),
         estimator_(config.estimator_factory->Create(
-            this, &clock_, config.control_type,
+            this,
+            &clock_,
+            config.control_type,
             kRemoteBitrateEstimatorMinBitrateBps)),
         baseline_(BaseLineFileInterface::Create(test_name + "_" + debug_name_,
                                                 config.update_baseline)) {
@@ -59,6 +65,8 @@ class TestedEstimator : public RemoteBitrateObserver {
 
   void EatPacket(const Packet& packet) {
     BWE_TEST_LOGGING_CONTEXT(debug_name_);
+
+    recv_stats_->IncomingPacket(packet.header(), packet.payload_size(), false);
 
     latest_estimate_bps_ = -1;
 
@@ -89,12 +97,19 @@ class TestedEstimator : public RemoteBitrateObserver {
     ASSERT_TRUE(packet_time_ms == clock_.TimeInMilliseconds());
   }
 
-  bool CheckEstimate(PacketSender::Feedback* feedback) {
+  bool GetFeedback(PacketSender::Feedback* feedback) {
     assert(feedback);
     BWE_TEST_LOGGING_CONTEXT(debug_name_);
     uint32_t estimated_bps = 0;
     if (LatestEstimate(&estimated_bps)) {
       feedback->estimated_bps = estimated_bps;
+      StatisticianMap statisticians = recv_stats_->GetActiveStatisticians();
+      if (statisticians.empty()) {
+        feedback->report_block = RTCPReportBlock();
+      } else {
+        feedback->report_block =
+            BuildReportBlock(statisticians.begin()->second);
+      }
       baseline_->Estimate(clock_.TimeInMilliseconds(), estimated_bps);
 
       double estimated_kbps = static_cast<double>(estimated_bps) / 1000.0;
@@ -123,6 +138,18 @@ class TestedEstimator : public RemoteBitrateObserver {
   }
 
  private:
+  static RTCPReportBlock BuildReportBlock(StreamStatistician* statistician) {
+    RTCPReportBlock report_block;
+    RtcpStatistics stats;
+    if (!statistician->GetStatistics(&stats, true))
+      return report_block;
+    report_block.fractionLost = stats.fraction_lost;
+    report_block.cumulativeLost = stats.cumulative_lost;
+    report_block.extendedHighSeqNum = stats.extended_max_sequence_number;
+    report_block.jitter = stats.jitter;
+    return report_block;
+  }
+
   bool LatestEstimate(uint32_t* estimate_bps) {
     if (latest_estimate_bps_ < 0) {
       vector<unsigned int> ssrcs;
@@ -144,11 +171,12 @@ class TestedEstimator : public RemoteBitrateObserver {
   bool plot_estimate_;
   SimulatedClock clock_;
   Stats<double> stats_;
+  scoped_ptr<ReceiveStatistics> recv_stats_;
   int64_t latest_estimate_bps_;
   scoped_ptr<RemoteBitrateEstimator> estimator_;
   scoped_ptr<BaseLineFileInterface> baseline_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(TestedEstimator);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(PacketReceiver);
 };
 
 class PacketProcessorRunner {
@@ -179,7 +207,7 @@ class PacketProcessorRunner {
       // TODO(holmer): Further optimize this by looking for consecutive flow ids
       // in the packet list and only doing the binary search + splice once for a
       // sequence.
-      if (std::binary_search(flow_ids.begin(), flow_ids.end(), it->flow_id())) {
+      if (flow_ids.find(it->flow_id()) != flow_ids.end()) {
         Packets::iterator next = it;
         ++next;
         out->splice(out->end(), *in, it);
@@ -242,8 +270,8 @@ void BweTest::SetupTestFromConfig(const BweTestConfig& config) {
   for (vector<BweTestConfig::EstimatorConfig>::const_iterator it =
        config.estimator_configs.begin(); it != config.estimator_configs.end();
        ++it) {
-    estimators_.insert(std::make_pair(it->flow_id, new TestedEstimator(
-        test_name, *it)));
+    estimators_.insert(
+        std::make_pair(it->flow_id, new PacketReceiver(test_name, *it)));
   }
   BWE_TEST_LOGGING_GLOBAL_ENABLE(false);
 }
@@ -254,9 +282,9 @@ void BweTest::AddPacketProcessor(PacketProcessor* processor, bool is_sender) {
   if (is_sender) {
     senders_.push_back(static_cast<PacketSender*>(processor));
   }
-  const FlowIds& flow_ids = processor->flow_ids();
-  for (size_t i = 0; i < flow_ids.size(); ++i) {
-    assert(estimators_.count(flow_ids[i]) == 1);
+  for (const auto& flow_id : processor->flow_ids()) {
+    RTC_UNUSED(flow_id);
+    assert(estimators_.count(flow_id) == 1);
   }
 }
 
@@ -277,22 +305,19 @@ void BweTest::VerboseLogging(bool enable) {
 }
 
 void BweTest::GiveFeedbackToAffectedSenders(int flow_id,
-                                            TestedEstimator* estimator) {
+                                            PacketReceiver* estimator) {
   std::list<PacketSender*> affected_senders;
-  for (std::vector<PacketSender*>::iterator psit =
-       senders_.begin(); psit != senders_.end(); ++psit) {
-    const FlowIds& flow_ids = (*psit)->flow_ids();
-    if (std::binary_search(flow_ids.begin(), flow_ids.end(), flow_id)) {
-      affected_senders.push_back(*psit);
+  for (auto* sender : senders_) {
+    if (sender->flow_ids().find(flow_id) != sender->flow_ids().end()) {
+      affected_senders.push_back(sender);
     }
   }
   PacketSender::Feedback feedback = {0};
-  if (estimator->CheckEstimate(&feedback) && !affected_senders.empty()) {
+  if (estimator->GetFeedback(&feedback) && !affected_senders.empty()) {
     // Allocate the bitrate evenly between the senders.
     feedback.estimated_bps /= affected_senders.size();
-    for (std::list<PacketSender*>::iterator psit = affected_senders.begin();
-        psit != affected_senders.end(); ++psit) {
-      (*psit)->GiveFeedback(feedback);
+    for (auto* sender : affected_senders) {
+      sender->GiveFeedback(feedback);
     }
   }
 }
@@ -311,9 +336,8 @@ void BweTest::RunFor(int64_t time_ms) {
        time_now_ms_ <= run_time_ms_ - simulation_interval_ms_;
        time_now_ms_ += simulation_interval_ms_) {
     Packets packets;
-    for (vector<PacketProcessorRunner>::iterator it =
-         processors_.begin(); it != processors_.end(); ++it) {
-      it->RunFor(simulation_interval_ms_, time_now_ms_, &packets);
+    for (auto& processor : processors_) {
+      processor.RunFor(simulation_interval_ms_, time_now_ms_, &packets);
     }
 
     // Verify packets are in order between batches.
@@ -330,15 +354,14 @@ void BweTest::RunFor(int64_t time_ms) {
       ASSERT_TRUE(IsTimeSorted(packets));
     }
 
-    for (PacketsConstIt it = packets.begin(); it != packets.end(); ++it) {
-      EstimatorMap::iterator est_it = estimators_.find(it->flow_id());
+    for (const auto& packet : packets) {
+      EstimatorMap::iterator est_it = estimators_.find(packet.flow_id());
       ASSERT_TRUE(est_it != estimators_.end());
-      est_it->second->EatPacket(*it);
+      est_it->second->EatPacket(packet);
     }
 
-    for (EstimatorMap::iterator est_it = estimators_.begin();
-         est_it != estimators_.end(); ++est_it) {
-      GiveFeedbackToAffectedSenders(est_it->first, est_it->second);
+    for (const auto& estimator : estimators_) {
+      GiveFeedbackToAffectedSenders(estimator.first, estimator.second);
     }
   }
 }

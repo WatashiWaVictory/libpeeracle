@@ -25,13 +25,15 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdio.h>
+
 #include "talk/media/base/mediachannel.h"  // For VideoOptions
 #include "talk/media/base/streamparams.h"
 #include "talk/media/webrtc/simulcast.h"
 #include "webrtc/base/common.h"
 #include "webrtc/base/logging.h"
 #include "webrtc/common_types.h"  // For webrtc::VideoCodec
-
+#include "webrtc/system_wrappers/interface/field_trial.h"
 namespace cricket {
 
 struct SimulcastFormat {
@@ -70,9 +72,6 @@ const SimulcastFormat kSimulcastFormats[] = {
 static const int
     kDefaultConferenceNumberOfTemporalLayers[webrtc::kMaxSimulcastStreams] =
     {3, 3, 3, 3};
-
-static const int kScreencastWithTemporalLayerTargetVideoBitrate = 100;
-static const int kScreencastWithTemporalLayerMaxVideoBitrate = 1000;
 
 void GetSimulcastSsrcs(const StreamParams& sp, std::vector<uint32>* ssrcs) {
   const SsrcGroup* sim_group = sp.get_ssrc_group(kSimSsrcGroupSemantics);
@@ -236,7 +235,6 @@ std::vector<webrtc::VideoStream> GetSimulcastConfig(
     SimulcastBitrateMode bitrate_mode,
     int width,
     int height,
-    int min_bitrate_bps,
     int max_bitrate_bps,
     int max_qp,
     int max_framerate) {
@@ -287,11 +285,6 @@ std::vector<webrtc::VideoStream> GetSimulcastConfig(
     streams.back().max_bitrate_bps += bitrate_left_bps;
   }
 
-  // Make sure the first stream respects the bitrate minimum.
-  if (streams[0].min_bitrate_bps < min_bitrate_bps) {
-    streams[0].min_bitrate_bps = min_bitrate_bps;
-  }
-
   return streams;
 }
 
@@ -304,7 +297,6 @@ bool ConfigureSimulcastCodec(
                          bitrate_mode,
                          static_cast<int>(codec->width),
                          static_cast<int>(codec->height),
-                         codec->minBitrate * 1000,
                          codec->maxBitrate * 1000,
                          codec->qpMax,
                          codec->maxFramerate);
@@ -414,10 +406,64 @@ void LogSimulcastSubstreams(const webrtc::VideoCodec& codec) {
   }
 }
 
+static const int kScreenshareMinBitrateKbps = 50;
+static const int kScreenshareMaxBitrateKbps = 6000;
+static const int kScreenshareDefaultTl0BitrateKbps = 100;
+static const int kScreenshareDefaultTl1BitrateKbps = 1000;
+
+static const char* kScreencastLayerFieldTrialName =
+    "WebRTC-ScreenshareLayerRates";
+
+ScreenshareLayerConfig::ScreenshareLayerConfig(int tl0_bitrate, int tl1_bitrate)
+    : tl0_bitrate_kbps(tl0_bitrate), tl1_bitrate_kbps(tl1_bitrate) {
+}
+
+ScreenshareLayerConfig ScreenshareLayerConfig::GetDefault() {
+  std::string group =
+      webrtc::field_trial::FindFullName(kScreencastLayerFieldTrialName);
+
+  ScreenshareLayerConfig config(kScreenshareDefaultTl0BitrateKbps,
+                                kScreenshareDefaultTl1BitrateKbps);
+  if (!group.empty() && !FromFieldTrialGroup(group, &config)) {
+    LOG(LS_WARNING) << "Unable to parse WebRTC-ScreenshareLayerRates"
+                       " field trial group: '" << group << "'.";
+  }
+  return config;
+}
+
+bool ScreenshareLayerConfig::FromFieldTrialGroup(
+    const std::string& group,
+    ScreenshareLayerConfig* config) {
+  // Parse field trial group name, containing bitrates for tl0 and tl1.
+  int tl0_bitrate;
+  int tl1_bitrate;
+  if (sscanf(group.c_str(), "%d-%d", &tl0_bitrate, &tl1_bitrate) != 2) {
+    return false;
+  }
+
+  // Sanity check.
+  if (tl0_bitrate < kScreenshareMinBitrateKbps ||
+      tl0_bitrate > kScreenshareMaxBitrateKbps ||
+      tl1_bitrate < kScreenshareMinBitrateKbps ||
+      tl1_bitrate > kScreenshareMaxBitrateKbps || tl0_bitrate > tl1_bitrate) {
+    return false;
+  }
+
+  config->tl0_bitrate_kbps = tl0_bitrate;
+  config->tl1_bitrate_kbps = tl1_bitrate;
+
+  return true;
+}
+
 void ConfigureConferenceModeScreencastCodec(webrtc::VideoCodec* codec) {
   codec->codecSpecific.VP8.numberOfTemporalLayers = 2;
-  codec->maxBitrate = kScreencastWithTemporalLayerMaxVideoBitrate;
-  codec->targetBitrate = kScreencastWithTemporalLayerTargetVideoBitrate;
+  ScreenshareLayerConfig config = ScreenshareLayerConfig::GetDefault();
+
+  // For screenshare in conference mode, tl0 and tl1 bitrates are piggybacked
+  // on the VideoCodec struct as target and max bitrates, respectively.
+  // See eg. webrtc::VP8EncoderImpl::SetRates().
+  codec->targetBitrate = config.tl0_bitrate_kbps;
+  codec->maxBitrate = config.tl1_bitrate_kbps;
 }
 
 }  // namespace cricket

@@ -67,6 +67,7 @@ static long stream_ctrl(BIO* h, int cmd, long arg1, void* arg2);
 static int stream_new(BIO* h);
 static int stream_free(BIO* data);
 
+// TODO(davidben): This should be const once BoringSSL is assumed.
 static BIO_METHOD methods_stream = {
   BIO_TYPE_BIO,
   "stream",
@@ -289,7 +290,7 @@ bool OpenSSLStreamAdapter::GetDtlsSrtpCipher(std::string* cipher) {
   if (state_ != SSL_CONNECTED)
     return false;
 
-  SRTP_PROTECTION_PROFILE *srtp_profile =
+  const SRTP_PROTECTION_PROFILE *srtp_profile =
       SSL_get_selected_srtp_profile(ssl_);
 
   if (!srtp_profile)
