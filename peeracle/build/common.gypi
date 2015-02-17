@@ -33,6 +33,7 @@
     # TODO(ronghuawu): Chromium build will need a different libjingle_root.
     'libjingle_tests_additional_deps%': [],
     'libjingle_root%': '<(DEPTH)',
+    'json_root%': '<(DEPTH)/third_party/jsoncpp/source/include/',
     # TODO(ronghuawu): For now, disable the Chrome plugins, which causes a
     # flood of chromium-style warnings.
     'clang_use_chrome_plugins%': 0,

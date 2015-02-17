@@ -155,3 +155,6 @@
 /xcodebuild
 
 !*.sha1
+
+/.idea
+/CMakeLists.txt
