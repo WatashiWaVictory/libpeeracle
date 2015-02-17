@@ -9,7 +9,7 @@ class PeerDataChannelObserverInterface
     : public webrtc::DataChannelObserver {
  public:
   virtual void OnStateChange() = 0;
-  virtual void OnMessage(const DataBuffer& buffer) = 0;
+  virtual void OnMessage(const webrtc::DataBuffer& buffer) = 0;
 
  protected:
   virtual ~PeerDataChannelObserverInterface() {}

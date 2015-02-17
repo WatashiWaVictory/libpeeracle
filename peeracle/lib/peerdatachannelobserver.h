@@ -15,7 +15,7 @@ class PeerDataChannelObserver
   virtual void OnMessage(const webrtc::DataBuffer& buffer);
 
  protected:
-  virtual ~PeerDataChannelObserverInterface() {}
+  virtual ~PeerDataChannelObserver() {}
 };
 
 }
