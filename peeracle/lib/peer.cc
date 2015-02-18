@@ -11,8 +11,6 @@ namespace peeracle {
 
 Peer::Peer() {
   mediaconstraints_.SetAllowDtlsSctpDataChannels();
-  mediaconstraints_.SetMandatoryReceiveAudio(false);
-  mediaconstraints_.SetMandatoryReceiveVideo(false);
 }
 
 Peer::~Peer() {
@@ -148,11 +146,14 @@ void Peer::AddICECandidate(const std::string &jobject) {
   std::string sdp_mid;
   int sdp_mlineindex = 0;
   std::string sdp;
+  Json::Reader reader;
+  Json::Value jdesc;
 
-  if (!GetStringFromJsonObject(jobject, "sdpMid", &sdp_mid) ||
-    !GetIntFromJsonObject(jobject, "sdpMLineIndex",
+  reader.parse(jobject, jdesc);
+  if (!GetStringFromJsonObject(jdesc, "sdpMid", &sdp_mid) ||
+    !GetIntFromJsonObject(jdesc, "sdpMLineIndex",
       &sdp_mlineindex) ||
-    !GetStringFromJsonObject(jobject, "candidate", &sdp)) {
+    !GetStringFromJsonObject(jdesc, "candidate", &sdp)) {
     LOG(WARNING) << "Can't parse received message.";
     return;
   }

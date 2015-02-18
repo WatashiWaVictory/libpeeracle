@@ -77,7 +77,7 @@ bool Tracker::Initialize(TrackerObserverInterface *observer) {
 #ifdef WIN32
 #else
   int syslog_options = LOG_PID | LOG_PERROR;
-  int debug_level = 0;
+  int debug_level = 7;
   /* we will only try to log things according to our debug_level */
   setlogmask(LOG_UPTO(LOG_DEBUG));
   openlog("lwsts", syslog_options, LOG_DAEMON);
@@ -351,11 +351,8 @@ void Tracker::HandleSignal_(const Json::Value &jmessage) {
     return;
   }
 
-  std::string data;
-  if (!GetStringFromJsonObject(jmessage, "data", &data)) {
-    lwsl_err("ERROR message has no data key\n");
-    return;
-  }
+  std::string data = JsonValueToString(jmessage["data"]);
+  lwsl_notice("data = %s\n", data.c_str());
 
   if (sign == "ice") {
     lwsl_notice("Got Ice candidate\n");

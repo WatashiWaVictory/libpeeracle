@@ -104,12 +104,16 @@ class MyTrackerAnnounceObserver
 
     if (peers.find(id) == peers.end()) {
       std::cout << "[tracker] peer not found" << std::endl;
-      return;
+
+      peeracle::PeerInterface* p = peeracle::PeerFactory::Create();
+      MyPeerObserver *peerObserver = new MyPeerObserver(p, id, hash_, tracker_);
+      peers[id] = p;
+
+      peers[id]->Initialize(peerObserver);
     }
 
     peeracle::PeerSetSessionDescriptionObserverInterface*
-      setDescriptionObserver =
-      new MyPeerSetSessionDescriptionObserver();
+      setDescriptionObserver = new MyPeerSetSessionDescriptionObserver();
     peers[id]->SetRemoteDescription(setDescriptionObserver, sdp);
     peers[id]->CreateAnswer();
   }
