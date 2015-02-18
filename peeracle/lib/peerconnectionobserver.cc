@@ -93,4 +93,9 @@ void PeerConnectionObserver::OnIceComplete() {
   LOG(LS_INFO) << "OnIceComplete";
 }
 
+void PeerConnectionObserver::SetPeerConnection(
+  rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection) {
+  peer_connection_ = peer_connection;
+}
+
 }

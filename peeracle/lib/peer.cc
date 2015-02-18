@@ -18,7 +18,6 @@ Peer::~Peer() {
 
 bool Peer::Initialize(PeerObserverInterface* observer) {
   peer_observer_ = observer;
-  peer_connection_observer_ = new PeerConnectionObserver(peer_observer_);
 
   rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>
     peer_connection_factory = webrtc::CreatePeerConnectionFactory();
@@ -34,6 +33,7 @@ bool Peer::Initialize(PeerObserverInterface* observer) {
 
   servers.push_back(server);
 
+  peer_connection_observer_ = new PeerConnectionObserver(peer_observer_);
   peer_connection_ = peer_connection_factory->CreatePeerConnection(servers,
     &mediaconstraints_,
     NULL,
@@ -44,6 +44,8 @@ bool Peer::Initialize(PeerObserverInterface* observer) {
     LOG(LS_ERROR) << "Failed to call CreatePeerConnection";
     return false;
   }
+
+  peer_connection_observer_->SetPeerConnection(peer_connection_);
   return true;
 }
 

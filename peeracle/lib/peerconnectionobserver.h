@@ -25,9 +25,12 @@ class PeerConnectionObserver
     webrtc::PeerConnectionInterface::IceGatheringState new_state);
   virtual void OnIceCandidate(const webrtc::IceCandidateInterface* candidate);
   virtual void OnIceComplete();
+  virtual void SetPeerConnection(
+    rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection);
 
  private:
   PeerObserverInterface* observer_;
+  rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
 
  protected:
   ~PeerConnectionObserver() {}
