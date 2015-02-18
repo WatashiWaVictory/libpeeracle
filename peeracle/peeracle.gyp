@@ -24,6 +24,7 @@
         'lib/manager.cc',
         'lib/tracker.cc',
         'lib/trackerfactory.cc',
+        'lib/gettimeofday.cc',
       ],
       'include_dirs': [
         '../third_party/jsoncpp/source/include/',
