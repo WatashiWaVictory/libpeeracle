@@ -1,4 +1,4 @@
-#ifndef WIN32
+#if !defined(WIN32) && !defined(ANDROID)
 #include <sys/syslog.h>
 #endif
 #include <cstring>
@@ -77,8 +77,7 @@ bool Tracker::Initialize(TrackerObserverInterface *observer) {
 
   tracker_observer_ = observer;
 
-#ifdef WIN32
-#else
+#if !defined(WIN32) && !defined(ANDROID)
   int syslog_options = LOG_PID | LOG_PERROR;
   int debug_level = 7;
   /* we will only try to log things according to our debug_level */
