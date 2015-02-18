@@ -4,7 +4,9 @@
 #include <cstring>
 #include <iostream>
 #include "webrtc/base/json.h"
+#if defined(WIN32)
 #include "third_party/libwebsockets/win32port/win32helpers/gettimeofday.h"
+#endif
 #include "third_party/libwebsockets/lib/libwebsockets.h"
 #include "peeracle/lib/tracker.h"
 #include "peeracle/lib/trackerobserverinterface.h"
