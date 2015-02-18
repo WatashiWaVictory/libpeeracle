@@ -253,7 +253,7 @@ void Tracker::ProcessQueue() {
   }
 
   buffer = queue_.top();
-  len = (size_t) sprintf((char *) &data[LWS_SEND_BUFFER_PRE_PADDING],
+  len = (size_t) sprintf((char *) &data[LWS_SEND_BUFFER_PRE_PADDING], "%s",
     buffer.c_str());
   lwsl_notice("Client TX: %s", &data[LWS_SEND_BUFFER_PRE_PADDING]);
   n = libwebsocket_write(wsi_, &data[LWS_SEND_BUFFER_PRE_PADDING],
