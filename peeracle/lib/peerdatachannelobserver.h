@@ -9,10 +9,13 @@ class PeerDataChannelObserverInterface;
 class PeerDataChannelObserver
     : public PeerDataChannelObserverInterface {
  public:
-  PeerDataChannelObserver();
+  PeerDataChannelObserver(webrtc::DataChannelInterface* data_channel);
 
   virtual void OnStateChange();
   virtual void OnMessage(const webrtc::DataBuffer& buffer);
+
+ private:
+  webrtc::DataChannelInterface* data_channel_;
 
  protected:
   virtual ~PeerDataChannelObserver() {}

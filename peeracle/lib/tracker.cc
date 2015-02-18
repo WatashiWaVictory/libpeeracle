@@ -392,4 +392,5 @@ void Tracker::HandleQuit_(const Json::Value &jmessage) {
     return;
   }
 }
+
 }
