@@ -1,0 +1,15 @@
+{
+  "compile_targets": [
+    "all"
+  ],
+  "gtest_tests": [
+    "views_unittests",
+    "wm_unittests",
+    "aura_unittests",
+    "ash_unittests",
+    "compositor_unittests",
+    "content_browsertests",
+    "events_unittests",
+    "ui_touch_selection_unittests"
+  ]
+}
