@@ -7,14 +7,17 @@
 namespace peeracle {
 
 class PeerObserverInterface;
+class PeerCreateSessionDescriptionObserverInterface;
 class PeerSetSessionDescriptionObserverInterface;
 class PeerInterface {
  public:
   virtual bool Initialize(PeerObserverInterface* observer) = 0;
   virtual void Terminate() = 0;
 
-  virtual void CreateOffer() = 0;
-  virtual void CreateAnswer() = 0;
+  virtual void CreateOffer(PeerCreateSessionDescriptionObserverInterface*
+    observer) = 0;
+  virtual void CreateAnswer(PeerCreateSessionDescriptionObserverInterface*
+    observer) = 0;
 
   virtual void SetLocalDescription(
     PeerSetSessionDescriptionObserverInterface* observer,

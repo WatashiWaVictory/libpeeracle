@@ -19,8 +19,10 @@ class Peer
   virtual bool Initialize(PeerObserverInterface* observer);
   virtual void Terminate();
 
-  virtual void CreateOffer();
-  virtual void CreateAnswer();
+  virtual void CreateOffer(PeerCreateSessionDescriptionObserverInterface*
+    observer);
+  virtual void CreateAnswer(PeerCreateSessionDescriptionObserverInterface*
+    observer);
 
   virtual void SetLocalDescription(PeerSetSessionDescriptionObserverInterface*
     observer, const std::string &jobject);

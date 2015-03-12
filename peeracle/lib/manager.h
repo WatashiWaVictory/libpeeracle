@@ -24,6 +24,11 @@ class Manager {
 
  protected:
   static Manager* singleton_;
+
+  rtc::Thread* signaling_thread_;
+  rtc::Thread* worker_thread_;
+
+  webrtc::PeerConnectionFactoryInterface *peerconnection_factory_;
 };
 
 }

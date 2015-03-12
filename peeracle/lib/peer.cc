@@ -53,50 +53,21 @@ void Peer::Terminate() {
 
 }
 
-void Peer::CreateOffer() {
+void Peer::CreateOffer(PeerCreateSessionDescriptionObserverInterface*
+  observer) {
   webrtc::DataChannelInit init;
   init.ordered = true;
 
   data_channel_ = peer_connection_->CreateDataChannel("data", &init);
   signal_channel_ = peer_connection_->CreateDataChannel("signal", &init);
 
-  rtc::scoped_refptr<PeerCreateSessionDescriptionObserver>
-    create_sdp_observer_ = new
-    rtc::RefCountedObject<PeerCreateSessionDescriptionObserver>
-    (peer_observer_);
-
-  peer_connection_->CreateOffer(create_sdp_observer_, &mediaconstraints_);
+  peer_connection_->CreateOffer(observer, &mediaconstraints_);
 }
 
-void Peer::CreateAnswer() {
-  rtc::scoped_refptr<PeerCreateSessionDescriptionObserver>
-    create_sdp_observer_ = new
-    rtc::RefCountedObject<PeerCreateSessionDescriptionObserver>
-    (peer_observer_);
-
-  peer_connection_->CreateAnswer(create_sdp_observer_, NULL);
+void Peer::CreateAnswer(PeerCreateSessionDescriptionObserverInterface*
+  observer) {
+  peer_connection_->CreateAnswer(observer, &mediaconstraints_);
 }
-
-class DummySetSessionDescriptionObserver
-    : public webrtc::SetSessionDescriptionObserver {
- public:
-  DummySetSessionDescriptionObserver(
-    PeerSetSessionDescriptionObserverInterface *observer) : observer_(observer) {}
-
-  void OnSuccess() {
-    observer_->OnSuccess();
-  }
-
-  void OnFailure(const std::string& error) {
-    observer_->OnFailure(error);
-  }
-
- private:
-  PeerSetSessionDescriptionObserverInterface *observer_;
-
- protected:
-  ~DummySetSessionDescriptionObserver() {};
-};
 
 void Peer::SetLocalDescription(PeerSetSessionDescriptionObserverInterface *observer,
   const std::string &jobject) {
@@ -118,7 +89,7 @@ void Peer::SetLocalDescription(PeerSetSessionDescriptionObserverInterface *obser
   desc = webrtc::CreateSessionDescription(type, sdp);
 
   peer_connection_->SetLocalDescription(new
-    rtc::RefCountedObject<DummySetSessionDescriptionObserver>(observer), desc);
+    rtc::RefCountedObject<PeerSetSessionDescriptionObserver>(observer), desc);
 }
 
 void Peer::SetRemoteDescription(PeerSetSessionDescriptionObserverInterface *observer,
@@ -141,7 +112,7 @@ void Peer::SetRemoteDescription(PeerSetSessionDescriptionObserverInterface *obse
   desc = webrtc::CreateSessionDescription(type, sdp);
 
   peer_connection_->SetRemoteDescription(new
-    rtc::RefCountedObject<DummySetSessionDescriptionObserver>(observer), desc);
+    rtc::RefCountedObject<PeerSetSessionDescriptionObserver>(observer), desc);
 }
 
 void Peer::AddICECandidate(const std::string &jobject) {

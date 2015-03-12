@@ -7,7 +7,7 @@
       'target_name': 'peer',
       'type': 'executable',
       'dependencies': [
-        'peeracle.gyp:peeracle',
+        'peeracle.gyp:peeracle_peer',
       ],
       'sources': [
         'examples/peer/main.cc',
