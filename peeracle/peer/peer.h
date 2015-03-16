@@ -14,8 +14,8 @@ class Peer
  public:
   explicit Peer();
 
-  void subscribe(PeerInterface::Observer* observer);
-  void unsubscribe(PeerInterface::Observer* observer);
+  void subscribe(PeerInterface::PeerObserver* observer);
+  void unsubscribe(PeerInterface::PeerObserver* observer);
 
   void createOffer(PeerInterface::SessionDescriptionObserver* observer);
   bool createAnswer(const std::string &sdp,
@@ -42,7 +42,7 @@ class Peer
   void OnIceCandidate(const webrtc::IceCandidateInterface* candidate);
   void OnIceComplete();
 
-  std::list<PeerInterface::Observer*> _peerObservers;
+  std::list<PeerInterface::PeerObserver*> _peerObservers;
 
   rtc::scoped_refptr<webrtc::PeerConnectionInterface> _peerConnection;
 

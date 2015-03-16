@@ -38,11 +38,11 @@ Peer::Peer() {
     &constr, NULL, NULL, this);
 }
 
-void Peer::subscribe(PeerInterface::Observer* observer) {
+void Peer::subscribe(PeerInterface::PeerObserver* observer) {
   _peerObservers.push_back(observer);
 }
 
-void Peer::unsubscribe(PeerInterface::Observer* observer) {
+void Peer::unsubscribe(PeerInterface::PeerObserver* observer) {
   std::remove(_peerObservers.begin(), _peerObservers.end(), observer);
 }
 
@@ -111,14 +111,14 @@ bool Peer::addIceCandidate(const std::string &sdpMid,
 
 void Peer::OnSignalingChange
   (webrtc::PeerConnectionInterface::SignalingState state) {
-  for (std::list<PeerInterface::Observer*>::iterator it =
+  for (std::list<PeerInterface::PeerObserver*>::iterator it =
     _peerObservers.begin(); it != _peerObservers.end(); ++it) {
     (*it)->onSignalingChange(state);
   }
 }
 
 void Peer::OnStateChange(StateType state_changed) {
-  for (std::list<PeerInterface::Observer*>::iterator it =
+  for (std::list<PeerInterface::PeerObserver*>::iterator it =
     _peerObservers.begin(); it != _peerObservers.end(); ++it) {
     (*it)->onStateChange(state_changed);
   }
@@ -143,7 +143,7 @@ void Peer::OnRenegotiationNeeded() {
 
 void Peer::OnIceConnectionChange(
   webrtc::PeerConnectionInterface::IceConnectionState new_state) {
-  for (std::list<PeerInterface::Observer*>::iterator it =
+  for (std::list<PeerInterface::PeerObserver*>::iterator it =
     _peerObservers.begin(); it != _peerObservers.end(); ++it) {
     (*it)->onIceConnectionChange(new_state);
   }
@@ -151,7 +151,7 @@ void Peer::OnIceConnectionChange(
 
 void Peer::OnIceGatheringChange(
   webrtc::PeerConnectionInterface::IceGatheringState new_state) {
-  for (std::list<PeerInterface::Observer*>::iterator it =
+  for (std::list<PeerInterface::PeerObserver*>::iterator it =
     _peerObservers.begin(); it != _peerObservers.end(); ++it) {
     (*it)->onIceGatheringChange(new_state);
   }
@@ -161,7 +161,7 @@ void Peer::OnIceCandidate(const webrtc::IceCandidateInterface* candidate) {
   std::string cand;
 
   candidate->ToString(&cand);
-  for (std::list<PeerInterface::Observer*>::iterator it =
+  for (std::list<PeerInterface::PeerObserver*>::iterator it =
     _peerObservers.begin(); it != _peerObservers.end(); ++it) {
     (*it)->onIceCandidate(candidate->sdp_mid(), candidate->sdp_mline_index(),
       cand);

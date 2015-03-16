@@ -26,7 +26,7 @@
 peeracle::Peer *peerA;
 peeracle::Peer *peerB;
 
-class MyPeerAObserver : public peeracle::PeerInterface::Observer {
+class MyPeerAObserver : public peeracle::PeerInterface::PeerObserver {
  public:
   explicit MyPeerAObserver() {
 
@@ -54,9 +54,13 @@ class MyPeerAObserver : public peeracle::PeerInterface::Observer {
   void onIceGatheringChange(int state) {
     std::cout << "PeerA onIceGatheringChange : " << state << std::endl;
   }
+
+  void onIceComplete() {
+    std::cout << "PeerA onIceComplete" << std::endl;
+  }
 };
 
-class MyPeerBObserver : public peeracle::PeerInterface::Observer {
+class MyPeerBObserver : public peeracle::PeerInterface::PeerObserver {
  public:
   explicit MyPeerBObserver() {
 
@@ -83,6 +87,10 @@ class MyPeerBObserver : public peeracle::PeerInterface::Observer {
 
   void onIceGatheringChange(int state) {
     std::cout << "PeerB onIceGatheringChange : " << state << std::endl;
+  }
+
+  void onIceComplete() {
+    std::cout << "PeerB onIceComplete" << std::endl;
   }
 };
 

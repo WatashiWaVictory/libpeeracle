@@ -7,7 +7,7 @@ namespace peeracle {
 
 class PeerInterface {
  public:
-  class Observer {
+  class PeerObserver {
    public:
     virtual void onIceCandidate(const std::string &sdpMid,
                                 int sdpMLineIndex,
@@ -28,8 +28,8 @@ class PeerInterface {
     virtual void onSetFailure(const std::string &error) = 0;
   };
 
-  virtual void subscribe(PeerInterface::Observer* observer) = 0;
-  virtual void unsubscribe(PeerInterface::Observer* observer) = 0;
+  virtual void subscribe(PeerInterface::PeerObserver* observer) = 0;
+  virtual void unsubscribe(PeerInterface::PeerObserver* observer) = 0;
 
   virtual void createOffer(SessionDescriptionObserver* observer) = 0;
   virtual bool createAnswer(const std::string &sdp,
