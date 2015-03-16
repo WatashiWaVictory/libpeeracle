@@ -169,8 +169,10 @@ void Peer::OnIceCandidate(const webrtc::IceCandidateInterface* candidate) {
 }
 
 void Peer::OnIceComplete() {
-  std::cout << "Peer::OnIceComplete " <<
-    std::endl;
+  for (std::list<PeerInterface::PeerObserver*>::iterator it =
+    _peerObservers.begin(); it != _peerObservers.end(); ++it) {
+    (*it)->onIceComplete();
+  }
 }
 
 }

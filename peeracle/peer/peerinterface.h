@@ -17,6 +17,7 @@ class PeerInterface {
     virtual void onStateChange(int state) = 0;
     virtual void onIceConnectionChange(int state) = 0;
     virtual void onIceGatheringChange(int state) = 0;
+    virtual void onIceComplete() = 0;
   };
 
   class SessionDescriptionObserver {
