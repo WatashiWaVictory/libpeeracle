@@ -24,6 +24,7 @@
 #        '<@(webrtc_root_additional_dependencies)',
         'peeracle/peeracle.gyp:*',
         'peeracle/peeracle_examples.gyp:*',
+        'peeracle/peeracle_objc.gyp:*',
       ],
       'conditions': [
         ['OS=="android"', {

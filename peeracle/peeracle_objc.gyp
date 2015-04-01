@@ -5,181 +5,73 @@
   'variables': {
     'pkg-config': 'pkg-config',
   },
-  'targets': [
-#   {
-#     'target_name': 'peeracle',
-#     'type': 'static_library',
-#     'dependencies': [
-#       '../third_party/jsoncpp/jsoncpp.gyp:jsoncpp',
-#       '../talk/libjingle.gyp:libjingle',
-#       '../talk/libjingle.gyp:libjingle_p2p',
-#       '../talk/libjingle.gyp:libjingle_peerconnection',
-#       '../third_party/libwebsockets/libwebsockets.gyp:*',
-#     ],
-#     'sources': [
-#       'lib/metadata.cc',
-#       'lib/peer.cc',
-#       'lib/peerfactory.cc',
-#       'lib/peerconnectionobserver.cc',
-#       'lib/peercreatesessiondescriptionobserver.cc',
-#       'lib/peerdatachannelobserver.cc',
-#       #'lib/peersetsessiondescriptionobserver.cc',
-#       'lib/manager.cc',
-#       'lib/tracker.cc',
-#       'lib/trackerfactory.cc',
-#       'lib/gettimeofday.cc',
-#     ],
-#     'include_dirs': [
-#       '../third_party/jsoncpp/source/include/',
-#     ],
-#   }, # target peeracle
-
-    {
-      'target_name': 'peeracle_peer',
-      'type': 'static_library',
-      'dependencies': [
-        '../talk/libjingle.gyp:libjingle',
-        '../talk/libjingle.gyp:libjingle_p2p',
-        '../talk/libjingle.gyp:libjingle_peerconnection',
-      ],
-      'sources': [
-      ],
-    }, # target peeracle_peer
-
-    {
-      'target_name': 'peeracle_tracker',
-      'type': 'static_library',
-      'dependencies': [
-        '../third_party/libwebsockets/libwebsockets.gyp:*',
-      ],
-      'sources': [
-      ],
-    }, # target peeracle_tracker
-
-    {
-      'target_name': 'peeracle_plugin',
-      'type': 'shared_library',
-      'dependencies': [
-        'peeracle.gyp:peeracle',
-      ],
-      'sources': [
-        'plugin/access.cc',
-        'plugin/module.cc',
-      ],
-      'conditions': [
-        ['OS=="linux"', {
-          'defines': [
-            'HAVE_GTK',
-          ],
-          'cflags': [
-            '<!@(<(pkg-config) --cflags vlc-plugin)',
-          ],
-          'ldflags': [
-            '<!@(<(pkg-config) --libs-only-L --libs-only-other vlc-plugin)',
-          ],
-          'libraries': [
-            '<!@(<(pkg-config) --libs-only-l vlc-plugin)',
-          ],
-          'include_dirs': [
-            '<(java_home)/include',
-            '<(java_home)/include/linux',
-            '../third_party/vlc/',
-          ],
-          'link_settings': {
-            'libraries': [
-              '<!@(pkg-config --libs-only-l gobject-2.0 gthread-2.0'
-                  ' gtk+-2.0)',
-            ],
-          },
-        }],
-      ],
-    }, # target peeracle_plugin
-  ], # targets
 
   'conditions': [
-    ['OS=="linux" or OS=="android"', {
+    ['OS=="ios" or OS=="mac"', {
       'targets': [
         {
-          'target_name': 'libpeeracle_so',
-          'type': 'shared_library',
+          'target_name': ‘peeracle_ios’
+          'type': 'executable',
+          'product_name': 'AppRTCDemo',
+          'mac_bundle': 1,
           'dependencies': [
-            'peeracle',
-          ],
-          'sources': [
-            'java/jni/peeracle_jni.cc'
+            'apprtc_signaling',
           ],
           'conditions': [
-            ['OS=="linux"', {
-              'defines': [
-                'HAVE_GTK',
+            ['OS=="ios"', {
+              'mac_bundle_resources': [
+                'examples/objc/AppRTCDemo/ios/resources/Default-568h.png',
+                'examples/objc/AppRTCDemo/ios/resources/Roboto-Regular.ttf',
+                'examples/objc/AppRTCDemo/ios/resources/ic_call_end_black_24dp.png',
+                'examples/objc/AppRTCDemo/ios/resources/ic_call_end_black_24dp@2x.png',
+                'examples/objc/AppRTCDemo/ios/resources/ic_clear_black_24dp.png',
+                'examples/objc/AppRTCDemo/ios/resources/ic_clear_black_24dp@2x.png',
+                'examples/objc/Icon.png',
               ],
-              'include_dirs': [
-                '<(java_home)/include',
-                '<(java_home)/include/linux',
+              'sources': [
+                'examples/objc/AppRTCDemo/ios/ARDAppDelegate.h',
+                'examples/objc/AppRTCDemo/ios/ARDAppDelegate.m',
+                'examples/objc/AppRTCDemo/ios/ARDMainView.h',
+                'examples/objc/AppRTCDemo/ios/ARDMainView.m',
+                'examples/objc/AppRTCDemo/ios/ARDMainViewController.h',
+                'examples/objc/AppRTCDemo/ios/ARDMainViewController.m',
+                'examples/objc/AppRTCDemo/ios/ARDVideoCallView.h',
+                'examples/objc/AppRTCDemo/ios/ARDVideoCallView.m',
+                'examples/objc/AppRTCDemo/ios/ARDVideoCallViewController.h',
+                'examples/objc/AppRTCDemo/ios/ARDVideoCallViewController.m',
+                'examples/objc/AppRTCDemo/ios/AppRTCDemo-Prefix.pch',
+                'examples/objc/AppRTCDemo/ios/UIImage+ARDUtilities.h',
+                'examples/objc/AppRTCDemo/ios/UIImage+ARDUtilities.m',
+                'examples/objc/AppRTCDemo/ios/main.m',
               ],
-              'link_settings': {
-                'libraries': [
-                  '<!@(pkg-config --libs-only-l gobject-2.0 gthread-2.0'
-                      ' gtk+-2.0)',
+              'xcode_settings': {
+                'INFOPLIST_FILE': 'examples/objc/AppRTCDemo/ios/Info.plist',
+              },
+            }],
+            ['OS=="mac"', {
+              'sources': [
+                'examples/objc/AppRTCDemo/mac/APPRTCAppDelegate.h',
+                'examples/objc/AppRTCDemo/mac/APPRTCAppDelegate.m',
+                'examples/objc/AppRTCDemo/mac/APPRTCViewController.h',
+                'examples/objc/AppRTCDemo/mac/APPRTCViewController.m',
+                'examples/objc/AppRTCDemo/mac/main.m',
+              ],
+              'xcode_settings': {
+                'CLANG_WARN_OBJC_MISSING_PROPERTY_SYNTHESIS': 'NO',
+                'INFOPLIST_FILE': 'examples/objc/AppRTCDemo/mac/Info.plist',
+                'MACOSX_DEPLOYMENT_TARGET' : '10.8',
+                'OTHER_LDFLAGS': [
+                  '-framework AVFoundation',
                 ],
               },
             }],
+            ['target_arch=="ia32"', {
+              'dependencies' : [
+                '<(DEPTH)/testing/iossim/iossim.gyp:iossim#host',
+              ],
+            }],
           ],
-        },
-        {
-          'target_name': 'libpeeracle_jar',
-          'type': 'none',
-          'actions': [
-            {
-              'variables': {
-                'java_src_dir': 'java/src',
-                'webrtc_modules_dir': '<(webrtc_root)/modules',
-                'build_jar_log': '<(INTERMEDIATE_DIR)/build_jar.log',
-                'peeracle_java_files': [
-                  'java/src/org/peeracle/Peer.java',
-                 ],
-                # TODO(fischman): extract this into a webrtc gyp var that can be
-                # included here, or better yet, build a proper .jar in webrtc
-                # and include it here.
-                'android_java_files': [
-                ],
-              },
-              'action_name': 'create_jar',
-              'inputs': [
-                'build/build_jar.sh',
-                '<@(java_files)',
-              ],
-              'outputs': [
-                '<(PRODUCT_DIR)/libpeeracle.jar',
-              ],
-              'conditions': [
-                ['OS=="android"', {
-                  'variables': {
-                    'java_files': ['<@(peeracle_java_files)', '<@(android_java_files)'],
-                    'build_classpath': '<(java_src_dir):<(DEPTH)/third_party/android_tools/sdk/platforms/android-<(android_sdk_version)/android.jar',
-                  },
-                }, {
-                  'variables': {
-                    'java_files': ['<@(peeracle_java_files)'],
-                    'build_classpath': '<(java_src_dir)',
-                  },
-                }],
-              ],
-              'action': [
-                'bash', '-ec',
-                'mkdir -p <(INTERMEDIATE_DIR) && '
-                '{ build/build_jar.sh <(java_home) <@(_outputs) '
-                '      <(INTERMEDIATE_DIR)/build_jar.tmp '
-                '      <(build_classpath) <@(java_files) '
-                '      > <(build_jar_log) 2>&1 || '
-                '  { cat <(build_jar_log) ; exit 1; } }'
-              ],
-            },
-          ],
-          'dependencies': [
-            'libpeeracle_so',
-          ],
-        },
+        },  
       ],
     }],
     ['OS=="android"', {
