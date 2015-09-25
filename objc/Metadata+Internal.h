@@ -23,8 +23,8 @@
 #import "objc/public/Metadata.h"
 #include "peeracle/Metadata/MetadataInterface.h"
 
-@interface Metadata ()
+@interface Metadata (Internal)
 
-@property(nonatomic, assign) peeracle::MetadataInterface *nativeMetadata;
+@property(nonatomic, readonly) peeracle::MetadataInterface *nativeMetadata;
 
 @end

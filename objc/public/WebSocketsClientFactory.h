@@ -20,28 +20,17 @@
  * SOFTWARE.
  */
 
-#import "DataStream+Internal.h"
+#import <Foundation/Foundation.h>
+#include "peeracle/WebSocketsClient/WebSocketsClientObserver.h"
 
-#include "peeracle/DataStream/DataStream.h"
+/*@interface WebSocketsClientObserver <NSObject>
 
-@implementation DataStream {
-  peeracle::DataStream *_nativeDataStream;
-}
+@end */
 
-@end
+@interface WebSocketsClientFactory : NSObject
 
-@implementation DataStream (Internal)
-
-- (peeracle::DataStream*) nativeDataStream {
-  return _nativeDataStream;
-}
-
-- (instancetype)initWithDataStream:(peeracle::DataStream*)dataStream {
-  NSAssert(dataStream != NULL, @"dataStream cannot be NULL");
-  if (self = [super init]) {
-    _nativeDataStream = dataStream;
-  }
-  return self;
-}
+-(void *)CreateWebSocketClient:(NSString *)url :
+  (peeracle::WebSocketsClientObserver *) observer;
 
 @end
+

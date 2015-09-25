@@ -20,18 +20,14 @@
  * SOFTWARE.
  */
 
-#import "FileDataStream.h"
+#import "objc/public/FileDataStream.h"
 
 #include "objc/FileDataStream+Internal.h"
 
 namespace peeracle {
-  FileDataStream::FileDataStream() {
-    NSArray       *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString  *documentsDirectory = [paths objectAtIndex:0];
-    NSString  *filePath = [NSString stringWithFormat:@"%@/%@", documentsDirectory,@"tears_of_steel_1920x856_4000K.peeracle"];
-    
+  FileDataStream::FileDataStream(NSString* path) {
     _bigEndian = true;
-    _handle = [NSFileHandle fileHandleForReadingAtPath:filePath];
+    _handle = [NSFileHandle fileHandleForReadingAtPath:path];
     [_handle seekToEndOfFile];
     _handleSize = [_handle offsetInFile];
     [_handle seekToFileOffset:0];
@@ -41,7 +37,7 @@ namespace peeracle {
     [_handle closeFile];
   }
   
-  std::streamsize FileDataStream::length() const {
+  std::streamsize FileDataStream::length() {
     return _handleSize;
   }
   
@@ -59,7 +55,7 @@ namespace peeracle {
     return (std::streamsize)[_handle offsetInFile];
   }
   
-  std::streamsize FileDataStream::tell() const {
+  std::streamsize FileDataStream::tell() {
     return (std::streamsize)[_handle offsetInFile];
   }
   
@@ -96,17 +92,52 @@ namespace peeracle {
 
     NSString *data = [NSString stringWithUTF8String:buffer];
     NSData *buff = [data dataUsingEncoding:NSUTF8StringEncoding];
-    std::streamsize cursor = (std::streamsize)[_handle offsetInFile];
     [_handle writeData:buff];
     return length;
   }
+};
+
+@implementation FileDataStream {
+  peeracle::FileDataStream *_nativeFileDataStream;
 }
 
-@implementation FileDataStream
+-(id)initWithFilePath:(NSString*)filePath{
+  _nativeFileDataStream = new peeracle::FileDataStream(filePath);
+  return [super initWithDataStream:_nativeFileDataStream];
+}
 
-- (id) init {
-  self.nativeDataStream = new peeracle::FileDataStream();
-  return self;
+-(NSInteger)length {
+  return (NSInteger)_nativeFileDataStream->length();
+}
+
+-(NSInteger)seek:(NSInteger)position {
+  return (NSInteger)_nativeFileDataStream->seek((std::streamsize)position);
+}
+
+-(NSInteger)tell {
+  return (NSInteger)_nativeFileDataStream->tell();
+}
+
+-(NSInteger)vread:(char*)buffer :(NSInteger)length {
+  
+  return (NSInteger)_nativeFileDataStream->vread(buffer, (std::streamsize)length);
+}
+
+-(NSInteger)vpeek:(char*)buffer :(NSInteger)length {
+  return (NSInteger)_nativeFileDataStream->vpeek(buffer, (std::streamsize)length);
+}
+
+-(NSInteger)vwrite:(char*)buffer :(NSInteger)length {
+  return (NSInteger)_nativeFileDataStream->vwrite(buffer, (std::streamsize)length);
+}
+
+@end
+
+@implementation FileDataStream (Internal)
+
+- (id) init:(char *)path {
+  NSString *file = [NSString stringWithUTF8String:path];
+  return [super initWithDataStream:new peeracle::FileDataStream(file)];
 }
 
 @end

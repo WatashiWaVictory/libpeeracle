@@ -23,20 +23,21 @@
 #import <Foundation/Foundation.h>
 #import "objc/public/DataStream.h"
 
-@class DataStream;
 @interface Metadata : NSObject
 
-@property(nonatomic, readonly) NSString* hash;
-@property(nonatomic, readonly) uint32_t magic;
-@property(nonatomic, readonly) uint32_t version;
-@property(nonatomic) NSString* hashAlgorithm;
-@property(nonatomic) uint32_t timecodeScale;
-@property(nonatomic) double duration;
-@property(nonatomic) NSArray* trackerUrls;
-@property(nonatomic, readonly) NSArray* streams;
-
+- (NSString*)getHash;
+- (void)setHashAlgorithmName:(NSString*)hashAlgorithm;
+- (void)setTimecodeScale:(uint32_t)timecodeScale;
+- (void)setDuration:(double)duration;
+- (NSString *)getId;
+- (uint32_t)getMagic;
+- (uint32_t)getVersion;
+- (uint32_t)getTimecodeScale;
+- (double)getDuration;
+- (NSArray *)getTrackerUrls;
+- (NSArray *)getStreams;
+- (NSString *)getHashAlgorithmName;
 - (void)addTrackerUrl:(NSString*)url;
-
 - (bool)serialize:(DataStream*)dataStream;
 - (bool)unserialize:(DataStream*)dataStream;
 

@@ -1,8 +1,8 @@
 //
-//  AppDelegate.h
-//  kxmovieapp
+//  MainViewController.h
+//  kxmovie
 //
-//  Created by Kolyvan on 11.10.12.
+//  Created by Kolyvan on 18.10.12.
 //  Copyright (c) 2012 Konstantin Boukreev . All rights reserved.
 //
 //  https://github.com/kolyvan/kxmovie
@@ -11,10 +11,6 @@
 
 #import <UIKit/UIKit.h>
 
-@class KxMovieViewController;
-
-@interface AppDelegate : UIResponder <UIApplicationDelegate>
-
-@property (strong, nonatomic) UIWindow *window;
+@interface MainViewController : UIViewController<UITableViewDataSource, UITableViewDelegate>
 
 @end

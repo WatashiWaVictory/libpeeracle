@@ -20,28 +20,19 @@
  * SOFTWARE.
  */
 
-#import "DataStream+Internal.h"
+#import <Foundation/Foundation.h>
+#import "objc/WebSocketsClient.h"
+#import "third_party/webrtc/webrtc/examples/objc/AppRTCDemo/third_party/SocketRocket/SRWebSocket.h"
+#include "peeracle/WebSocketsClient/WebSocketsClientInterface.h"
+#include "peeracle/WebSocketsClient/WebSocketsClientObserver.h"
 
-#include "peeracle/DataStream/DataStream.h"
+@interface PRCLWebSocketsClient (Internal) <SRWebSocketDelegate>
 
-@implementation DataStream {
-  peeracle::DataStream *_nativeDataStream;
-}
+@property(nonatomic, readonly) peeracle::WebSocketsClientInterface *nativeWebSocketsClient;
 
-@end
-
-@implementation DataStream (Internal)
-
-- (peeracle::DataStream*) nativeDataStream {
-  return _nativeDataStream;
-}
-
-- (instancetype)initWithDataStream:(peeracle::DataStream*)dataStream {
-  NSAssert(dataStream != NULL, @"dataStream cannot be NULL");
-  if (self = [super init]) {
-    _nativeDataStream = dataStream;
-  }
-  return self;
-}
+-(instancetype)initWithWebSocketsClient:(peeracle::WebSocketsClientInterface*)nativeWebSocketsClient withObserver:(peeracle::WebSocketsClientObserver*)observer withURL:(NSURL*)url;
+-(void)connect;
+-(void)send:(NSData*)data;
+-(void)update;
 
 @end

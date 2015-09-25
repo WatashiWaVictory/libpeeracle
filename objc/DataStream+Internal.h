@@ -22,10 +22,15 @@
 
 #import <Foundation/Foundation.h>
 #import "objc/public/DataStream.h"
-#include "peeracle/DataStream/DataStream.h"
 
-@interface DataStream ()
+namespace peeracle {
+  class DataStream;
+}
 
-@property(nonatomic, assign) peeracle::DataStream *nativeDataStream;
+@interface DataStream (Internal)
+
+@property(nonatomic, readonly) peeracle::DataStream *nativeDataStream;
+
+- (instancetype)initWithDataStream:(peeracle::DataStream*)dataStream;
 
 @end

@@ -21,6 +21,7 @@
 
 {
   'includes': [
+    '../third_party/webrtc/webrtc/build/common.gypi',
     '../build/common.gypi'
   ],
   'targets': [
@@ -29,6 +30,7 @@
       'type': 'static_library',
       'dependencies': [
         '../peeracle/peeracle.gyp:peeracle',
+        '<(webrtc_root)/libjingle_examples.gyp:socketrocket',
       ],
       'sources': [
         'public/peeracle.h',
@@ -38,13 +40,37 @@
         'DataStream.mm',
         'DataStream+Internal.h',
 
-        'FileDataStream.h',
+        'public/FileDataStream.h',
         'FileDataStream+Internal.h',
         'FileDataStream.mm',
 
         'public/Metadata.h',
         'Metadata.mm',
         'Metadata+Internal.h',
+
+        'public/MetadataStream.h',
+        'MetadataStream.mm',
+        'MetadataStream+Internal.h',
+
+        'public/Session.h',
+        'Session.mm',
+        'Session+Internal.h',
+
+        'public/SessionHandle.h',
+        'SessionHandle.mm',
+
+        'public/SessionObserver.h',
+
+        'public/SessionHandleObserver.h',
+
+        'MemoryStorage.h',
+        'MemoryStorage.mm',
+
+        'WebSocketsClient.h',
+        'WebSocketsClient.mm',
+        'WebSocketsClient+Internal.h',
+
+        'WebSocketsClientFactory.mm'
       ],
       'direct_dependent_settings': {
         'include_dirs': [

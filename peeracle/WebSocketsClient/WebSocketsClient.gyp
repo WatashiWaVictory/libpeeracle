@@ -60,7 +60,7 @@
     },
   ],
   'conditions': [
-    ['build_tests == 1', {
+    ['OS != "ios" and build_tests == 1', {
       'targets': [
         {
           'target_name': 'peeracle_websocketsclient_unittest',

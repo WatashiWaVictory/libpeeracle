@@ -21,29 +21,22 @@
  */
 
 #import "Metadata+Internal.h"
+#import "MetadataStream+Internal.h"
+#import "objc/DataStream+Internal.h"
 
 #include "peeracle/Metadata/Metadata.h"
 
-@implementation Metadata
+@implementation Metadata {
+  peeracle::Metadata *_nativeMetadata;
+}
 
-@synthesize nativeMetadata = _nativeMetadata;
-
-/*@property(nonatomic, readonly) NSString* hash;
-@property(nonatomic, readonly) NSUInteger magic;
-@property(nonatomic, readonly) NSUInteger version;
-@property(nonatomic) NSString* hashAlgorithm;
-@property(nonatomic) NSUInteger timecodeScale;
-@property(nonatomic) double duration;
-@property(nonatomic) NSArray* trackerUrls;
-@property(nonatomic, readonly) NSArray* streams;*/
-
-- (NSString*) hash {
+- (NSString*) getHash {
   return [NSString stringWithCString:_nativeMetadata->getId().c_str()
                             encoding:[NSString defaultCStringEncoding]];
 }
 
-- (void) setHashAlgorithm:(NSString*)hashAlgorithm {
-  _nativeMetadata->setHashAlgorithm([hashAlgorithm UTF8String]);
+- (void) setHashAlgorithmName:(NSString*)hashAlgorithm {
+  _nativeMetadata->setHashAlgorithmName([hashAlgorithm UTF8String]);
 }
 
 - (void) setTimecodeScale:(uint32_t)timecodeScale {
@@ -54,15 +47,69 @@
   _nativeMetadata->setDuration(duration);
 }
 
+- (NSString *)getId {
+  return [NSString stringWithCString:_nativeMetadata->getId().c_str() encoding: [NSString defaultCStringEncoding]];
+}
+
+- (uint32_t) getMagic {
+  return _nativeMetadata->getMagic();
+}
+
+- (uint32_t) getVersion {
+  return _nativeMetadata->getVersion();
+}
+
+- (uint32_t) getTimecodeScale {
+  return _nativeMetadata->getTimecodeScale();
+}
+
+- (double) getDuration {
+  return _nativeMetadata->getDuration();
+}
+
+- (NSArray *) getTrackerUrls {
+  NSArray *urls = [NSArray array];
+  std::vector<std::string> &nativeUrls = _nativeMetadata->getTrackerUrls();
+  
+  for (std::vector<std::string>::iterator it = nativeUrls.begin(); it != nativeUrls.end(); ++it) {
+    std::string nativeUrl = (*it);
+    NSString *url = [NSString stringWithCString:nativeUrl.c_str() encoding:[NSString defaultCStringEncoding]];
+    urls = [urls arrayByAddingObject:url];
+  }
+  
+  return urls;
+}
+
+- (NSArray *) getStreams {
+  NSArray *streams = [NSArray array];
+  std::vector<peeracle::MetadataStreamInterface*> &nativeStreams = _nativeMetadata->getStreams();
+  
+  for (std::vector<peeracle::MetadataStreamInterface*>::iterator it = nativeStreams.begin(); it != nativeStreams.end(); ++it) {
+    MetadataStream *stream = [[MetadataStream alloc] initWithMetadataStream:(*it)];
+    streams = [streams arrayByAddingObject:stream];
+  }
+  
+  return streams;
+}
+
+- (NSString *) getHashAlgorithmName {
+  return [NSString stringWithCString:_nativeMetadata->getHashAlgorithmName().c_str() encoding:[NSString defaultCStringEncoding]];
+}
+
 - (void) addTrackerUrl:(NSString *)url {
+  _nativeMetadata->addTracker([url UTF8String]);
 }
 
 - (bool) serialize:(DataStream *)dataStream {
-  _nativeMetadata->serialize(reinterpret_cast<peeracle::DataStream*>([dataStream nativeDataStream]));
+  return _nativeMetadata->serialize(reinterpret_cast<peeracle::DataStream*>([dataStream nativeDataStream]));
 }
 
 - (bool) unserialize:(DataStream *)dataStream {
-  _nativeMetadata->unserialize(reinterpret_cast<peeracle::DataStream*>([dataStream nativeDataStream]));
+  return _nativeMetadata->unserialize(reinterpret_cast<peeracle::DataStream*>([dataStream nativeDataStream]));
+}
+
+-(peeracle::MetadataInterface*)nativeMetadata {
+  return _nativeMetadata;
 }
 
 - (id) init {
@@ -73,4 +120,5 @@
 - (void) dealloc {
   delete _nativeMetadata;
 }
+
 @end

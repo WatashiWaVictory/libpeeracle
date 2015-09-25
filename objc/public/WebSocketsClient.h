@@ -20,28 +20,11 @@
  * SOFTWARE.
  */
 
-#import "DataStream+Internal.h"
+#import <Foundation/Foundation.h>
 
-#include "peeracle/DataStream/DataStream.h"
+@interface DataStream : NSObject
 
-@implementation DataStream {
-  peeracle::DataStream *_nativeDataStream;
-}
-
-@end
-
-@implementation DataStream (Internal)
-
-- (peeracle::DataStream*) nativeDataStream {
-  return _nativeDataStream;
-}
-
-- (instancetype)initWithDataStream:(peeracle::DataStream*)dataStream {
-  NSAssert(dataStream != NULL, @"dataStream cannot be NULL");
-  if (self = [super init]) {
-    _nativeDataStream = dataStream;
-  }
-  return self;
-}
+- (void*) nativeDataStream;
+- (void) setNativeDataStream:(void*)nativeDataStream;
 
 @end

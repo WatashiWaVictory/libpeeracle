@@ -20,28 +20,29 @@
  * SOFTWARE.
  */
 
-#import "DataStream+Internal.h"
+#import <Foundation/Foundation.h>
 
-#include "peeracle/DataStream/DataStream.h"
+#import "objc/public/Metadata.h"
+#import "objc/public/SessionHandle.h"
+#import "objc/public/SessionHandleObserver.h"
 
-@implementation DataStream {
-  peeracle::DataStream *_nativeDataStream;
-}
+@class PRCLSession;
+
+@protocol PRCLSessionDelegate<NSObject>
 
 @end
 
-@implementation DataStream (Internal)
+@interface PRCLSession : NSObject
 
-- (peeracle::DataStream*) nativeDataStream {
-  return _nativeDataStream;
-}
+@property(nonatomic, assign) NSMutableDictionary* peers;
+@property(nonatomic, assign) NSMutableDictionary* handles;
+@property(nonatomic, assign) NSMutableDictionary* trackers;
+@property(nonatomic, weak) id<PRCLSessionDelegate> delegate;
 
-- (instancetype)initWithDataStream:(peeracle::DataStream*)dataStream {
-  NSAssert(dataStream != NULL, @"dataStream cannot be NULL");
-  if (self = [super init]) {
-    _nativeDataStream = dataStream;
-  }
-  return self;
-}
+- (NSMutableDictionary *) vgetPeers;
+- (NSMutableDictionary *) vgetHandles;
+
+- (id)initWithDelegate:(id<PRCLSessionDelegate>)delegate;
+- (PRCLSessionHandle*)addMetadata:(Metadata*)metadata withDelegate:(id<PRCLSessionHandleDelegate>)delegate;
 
 @end

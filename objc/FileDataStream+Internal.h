@@ -20,28 +20,39 @@
  * SOFTWARE.
  */
 
-#import "DataStream+Internal.h"
+#import <Foundation/Foundation.h>
+#import "objc/public/FileDataStream.h"
+#import "objc/DataStream+Internal.h"
 
+#include <fstream>
 #include "peeracle/DataStream/DataStream.h"
 
-@implementation DataStream {
-  peeracle::DataStream *_nativeDataStream;
+namespace peeracle {
+  class FileDataStream : public DataStream {
+   public:
+    explicit FileDataStream(NSString *path);
+    ~FileDataStream();
+    
+    std::streamsize length();
+    std::streamsize seek(std::streamsize position);
+    std::streamsize tell();
+    
+   public:
+    std::streamsize vread(char *buffer, std::streamsize length);
+    std::streamsize vpeek(char *buffer, std::streamsize length);
+    std::streamsize vwrite(const char *buffer, std::streamsize length);
+    
+   protected:
+    NSInputStream *_stream;
+    std::streamsize _cursor;
+    std::fstream  _isStream;
+    std::streamsize _fileSize;
+    
+    NSFileHandle *_handle;
+    unsigned long long _handleSize;
+  };
 }
 
-@end
-
-@implementation DataStream (Internal)
-
-- (peeracle::DataStream*) nativeDataStream {
-  return _nativeDataStream;
-}
-
-- (instancetype)initWithDataStream:(peeracle::DataStream*)dataStream {
-  NSAssert(dataStream != NULL, @"dataStream cannot be NULL");
-  if (self = [super init]) {
-    _nativeDataStream = dataStream;
-  }
-  return self;
-}
+@interface FileDataStream (Internal)
 
 @end

@@ -45,19 +45,42 @@
       },
       'conditions': [
         ['OS=="ios"', {
+          'cflags': [
+            '-fPIC',
+          ],
+          'dependencies': [
+            '<(DEPTH)/third_party/webrtc/chromium/src/third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
+          ],
           'mac_bundle_resources': [
-            'ios/Base.lproj/LaunchScreen.xib',
-            'ios/Base.lproj/Main.storyboard'
+            'ios/kxmovie/kxmovie.bundle/music_icon.png'
+          ],
+          'include_dirs': [
+            'ios/kxmovie'
           ],
           'sources': [
             'ios/AppDelegate.h',
             'ios/AppDelegate.m',
             'ios/main.m',
-            'ios/ViewController.h',
-            'ios/ViewController.m'
+            'ios/MainViewController.h',
+            'ios/MainViewController.m',
+
+            'ios/kxmovie/KxAudioManager.h',
+            'ios/kxmovie/KxAudioManager.m',
+            'ios/kxmovie/KxLogger.h',
+            'ios/kxmovie/KxMovieDecoder.h',
+            'ios/kxmovie/KxMovieDecoder.m',
+            'ios/kxmovie/KxMovieGLView.h',
+            'ios/kxmovie/KxMovieGLView.m',
+            'ios/kxmovie/KxMovieViewController.h',
+            'ios/kxmovie/KxMovieViewController.m',
           ],
           'xcode_settings': {
             'INFOPLIST_FILE': 'ios/Info.plist',
+            'OTHER_LDFLAGS': [
+              '-framework Accelerate',
+              '-framework AVFoundation',
+              '-liconv'
+            ],
           },
         }],
         ['OS=="mac"', {

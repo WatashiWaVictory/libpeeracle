@@ -20,28 +20,19 @@
  * SOFTWARE.
  */
 
-#import "DataStream+Internal.h"
+#import <Foundation/Foundation.h>
+#include "peeracle/Storage/StorageInterface.h"
 
-#include "peeracle/DataStream/DataStream.h"
+namespace peeracle {
+class MemoryStorage : public StorageInterface {
+ public:
 
-@implementation DataStream {
-  peeracle::DataStream *_nativeDataStream;
+  MemoryStorage();
+  virtual ~MemoryStorage();
+
+  bool retrieve(const std::string &hash, uint32_t segment, uint32_t offset,
+                uint32_t length, char *dest);
+  bool store(const std::string &hash, uint32_t segment, uint32_t offset,
+             uint32_t length, const char *src);
+};
 }
-
-@end
-
-@implementation DataStream (Internal)
-
-- (peeracle::DataStream*) nativeDataStream {
-  return _nativeDataStream;
-}
-
-- (instancetype)initWithDataStream:(peeracle::DataStream*)dataStream {
-  NSAssert(dataStream != NULL, @"dataStream cannot be NULL");
-  if (self = [super init]) {
-    _nativeDataStream = dataStream;
-  }
-  return self;
-}
-
-@end

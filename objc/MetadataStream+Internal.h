@@ -20,28 +20,13 @@
  * SOFTWARE.
  */
 
-#import "DataStream+Internal.h"
+#import "objc/public/MetadataStream.h"
+#include "peeracle/Metadata/MetadataStreamInterface.h"
 
-#include "peeracle/DataStream/DataStream.h"
+@interface MetadataStream (Internal)
 
-@implementation DataStream {
-  peeracle::DataStream *_nativeDataStream;
-}
+@property(nonatomic, readonly) peeracle::MetadataStreamInterface *nativeMetadataStream;
 
-@end
-
-@implementation DataStream (Internal)
-
-- (peeracle::DataStream*) nativeDataStream {
-  return _nativeDataStream;
-}
-
-- (instancetype)initWithDataStream:(peeracle::DataStream*)dataStream {
-  NSAssert(dataStream != NULL, @"dataStream cannot be NULL");
-  if (self = [super init]) {
-    _nativeDataStream = dataStream;
-  }
-  return self;
-}
+-(instancetype)initWithMetadataStream:(peeracle::MetadataStreamInterface*)metadataStream;
 
 @end

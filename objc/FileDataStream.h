@@ -21,8 +21,8 @@
  */
 
 #import <Foundation/Foundation.h>
-#import "objc/public/DataStream.h"
+#import "objc/DataStream+Internal.h"
 
-@interface FileDataStream : DataStream
+@interface FileDataStream (Internal) : DataStream
 
 @end

@@ -20,28 +20,16 @@
  * SOFTWARE.
  */
 
-#import "DataStream+Internal.h"
+#import <Foundation/Foundation.h>
 
-#include "peeracle/DataStream/DataStream.h"
+@protocol SessionHandleObserver <NSObject>
 
-@implementation DataStream {
-  peeracle::DataStream *_nativeDataStream;
-}
+-(void)onEnter:(id)peer;
 
-@end
+-(void)onLeave:(id)peer;
 
-@implementation DataStream (Internal)
+-(void)onRequest:(id)peer :(uint32_t)segment : (uint32_t)chunk;
 
-- (peeracle::DataStream*) nativeDataStream {
-  return _nativeDataStream;
-}
-
-- (instancetype)initWithDataStream:(peeracle::DataStream*)dataStream {
-  NSAssert(dataStream != NULL, @"dataStream cannot be NULL");
-  if (self = [super init]) {
-    _nativeDataStream = dataStream;
-  }
-  return self;
-}
+-(void)onChunk:(id)peer :(uint32_t)segment : (uint32_t)chunk :(uint32_t)offset :(const char*) bytes : (uint32_t) length;
 
 @end

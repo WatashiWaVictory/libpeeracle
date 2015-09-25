@@ -20,26 +20,46 @@
  * SOFTWARE.
  */
 
-#import "DataStream+Internal.h"
+#import "MetadataStream+Internal.h"
 
-#include "peeracle/DataStream/DataStream.h"
+#include "peeracle/Metadata/MetadataStreamInterface.h"
 
-@implementation DataStream {
-  peeracle::DataStream *_nativeDataStream;
+@implementation MetadataStream {
+  peeracle::MetadataStreamInterface *_nativeMetadataStream;
+}
+
+-(peeracle::MetadataStreamInterface*)nativeMetadataStream {
+  return _nativeMetadataStream;
+}
+
+/*
+-(instancetype)initWithInterface:(id)MetadataStreamInterface {
+  if (self = [super init]) {
+    _nativeMetadataStream = (peeracle::MetadataStreamInterface*)(MetadataStreamInterface);
+  }
+  return self;
+}
+*/
+
+-(uint8_t*)getInitSegment {
+  return _nativeMetadataStream->getInitSegment();
+}
+
+-(uint32_t) getInitSegmentLength {
+  return _nativeMetadataStream->getInitSegmentLength();
 }
 
 @end
 
-@implementation DataStream (Internal)
+@implementation MetadataStream (Internal)
 
-- (peeracle::DataStream*) nativeDataStream {
-  return _nativeDataStream;
+-(peeracle::MetadataStreamInterface*)nativeMetadataStream {
+  return _nativeMetadataStream;
 }
 
-- (instancetype)initWithDataStream:(peeracle::DataStream*)dataStream {
-  NSAssert(dataStream != NULL, @"dataStream cannot be NULL");
+-(instancetype)initWithMetadataStream:(peeracle::MetadataStreamInterface*)metadataStream {
   if (self = [super init]) {
-    _nativeDataStream = dataStream;
+    _nativeMetadataStream = metadataStream;
   }
   return self;
 }

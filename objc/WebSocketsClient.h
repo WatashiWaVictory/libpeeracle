@@ -20,28 +20,28 @@
  * SOFTWARE.
  */
 
-#import "DataStream+Internal.h"
+#ifndef OBJC_WEBSOCKETSCLIENT_H_
+#define OBJC_WEBSOCKETSCLIENT_H_
 
-#include "peeracle/DataStream/DataStream.h"
+#include <string>
 
-@implementation DataStream {
-  peeracle::DataStream *_nativeDataStream;
-}
+#include "peeracle/WebSocketsClient/WebSocketsClientInterface.h"
+#include "peeracle/WebSocketsClient/WebSocketsClientObserver.h"
 
-@end
+namespace peeracle {
 
-@implementation DataStream (Internal)
+class WebSocketsClient : public WebSocketsClientInterface {
+ public:
+  WebSocketsClient(const std::string& url, WebSocketsClientObserver *observer);
+  ~WebSocketsClient();
 
-- (peeracle::DataStream*) nativeDataStream {
-  return _nativeDataStream;
-}
+  bool Init();
+  bool Connect();
+  bool Update();
+  bool Send(const char *buffer, size_t length);
+  bool Disconnect();
+};
 
-- (instancetype)initWithDataStream:(peeracle::DataStream*)dataStream {
-  NSAssert(dataStream != NULL, @"dataStream cannot be NULL");
-  if (self = [super init]) {
-    _nativeDataStream = dataStream;
-  }
-  return self;
-}
+}  // namespace peeracle
 
-@end
+#endif  // OBJC_WEBSOCKETSCLIENT_H_
